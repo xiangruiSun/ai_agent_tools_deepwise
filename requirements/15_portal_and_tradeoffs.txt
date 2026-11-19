@@ -53,8 +53,25 @@ The site needs a host that can reach a model. Options, to be chosen by the proje
   a. This PC with the local model, exposed through a tunnel. Online only while the PC is on.
   b. A cloud host with a hosted model key (set DWAGENT_PROFILE=cloud and a provider adapter).
      Only the public demo data may be sent to a hosted model.
-Before any public exposure: set DWAGENT_SECRET_KEY, serve over HTTPS, and note that
-PMC-Patients is licensed for non-commercial use only.
+Chosen: (a). Public mode (python -m dwagent.web.public, DWAGENT_PUBLIC=1) is what the tunnel
+points at. Requirements for public mode:
+P1  The process refuses to start with the default session secret, or with any account still on
+    the password written in the source. The launcher generates a random secret and one random
+    password per account into data/runtime/ (not committed); --rotate replaces them.
+P2  Passwords are never sent to the browser. The sign-in page lists account names only; the
+    project owner hands out passwords.
+P3  The portal listens on 127.0.0.1 only. The tunnel program on the same machine is the only
+    way in, and it reaches the portal alone: the model server, the retrieval service and the
+    DICOM gateway stay unreachable from outside.
+P4  Forwarded-address headers are trusted from 127.0.0.1 only, so the login lock-out and the job
+    limits count the visitor's address, not the tunnel's.
+P5  Admission control on agent jobs (chat, explanation, pipeline): per client (account plus
+    address) 2 running and 20 per 10 minutes, 6 running in total; over the limit returns 429 and
+    is audited. The demo accounts are shared, so the account alone is not the key.
+P6  Response headers: content security policy (scripts from this origin only), no framing,
+    no-referrer, nosniff, no-store on API responses, HSTS and noindex in public mode. The session
+    cookie is Secure. The interactive API documentation is switched off.
+P7  PMC-Patients is licensed for non-commercial use only; the site says it is a research demo.
 
 Verification
 ------------
@@ -66,9 +83,16 @@ Browser run on the local portal (2026-11-18), all three logins:
             and worklist returned 403
 The measured comparison of workflow, single agent and multi-agent is in verification/REPORT.md
 (tasks 03, 05 and 08).
+Access model and public mode: tests/test_web.py (15 tests, no model needed) covers the role
+matrix, session forgery, login lock-out, job limits, refusal of the default secret and of source
+passwords, and that no password reaches the browser. Run against the live public-mode process on
+2026-11-19: all three roles signed in with generated passwords, the source passwords were
+refused, and every listening port was bound to 127.0.0.1.
 
 Known limits
 ------------
 Demo accounts and an in-memory job table: restarting the server forgets running chat jobs
-(pipeline runs survive through their checkpoints). No password reset, no multi-factor login, no
-rate limit on agent calls.
+(pipeline runs survive through their checkpoints). No password reset and no multi-factor login.
+The job limits and the login lock-out live in the memory of one process. Visitors share the demo
+accounts, so one visitor can sign a report or store an assistant memory that the next one sees.
+A public site on this PC is online only while the PC, the model server and the tunnel run.

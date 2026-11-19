@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_SECRET = "local-demo-secret-change-me"
 
 
 def _env(name: str, default: str) -> str:
@@ -33,7 +34,13 @@ class Settings:
     profile: str = field(default_factory=lambda: _env("PROFILE", "onprem"))
 
     # Web session signing key. The default is for the local demo only.
-    secret_key: str = field(default_factory=lambda: _env("SECRET_KEY", "local-demo-secret-change-me"))
+    secret_key: str = field(default_factory=lambda: _env("SECRET_KEY", DEFAULT_SECRET))
+
+    # Public mode: the portal is reachable from the internet through a tunnel. It refuses the
+    # default secret, takes account passwords from a local file instead of the source code,
+    # never sends passwords to the browser, and applies tighter request limits.
+    public: bool = field(default_factory=lambda: _env("PUBLIC", "0").lower() in ("1", "true", "yes"))
+    credentials_file: str = field(default_factory=lambda: _env("CREDENTIALS_FILE", ""))
 
     @property
     def lidc_dir(self) -> Path:

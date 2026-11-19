@@ -43,6 +43,8 @@ const ROLE_COPY = {
 };
 async function renderLogin(msg) {
   const accounts = await api("/api/demo-accounts");
+  const oneClick = accounts.some((a) => a.password);          // local demo only; never on the public site
+  const pick = (a) => { user.value = a.username; if (a.password) { pass.value = a.password; submit(); } else { pass.value = ""; pass.focus(); } };
   const user = h("input", { id: "u", autocomplete: "username" }), pass = h("input", { id: "p", type: "password", autocomplete: "current-password" });
   const err = h("div", { class: "err", role: "alert" }, msg || "");
   const submit = async (ev) => {
@@ -56,12 +58,13 @@ async function renderLogin(msg) {
     h("div", { class: "banner" }, "Not a medical device. Nothing on this site is a diagnosis or medical advice. The detector is a rule-based stand-in, and the “radiologist review” is simulated from the public LIDC reader annotations."),
     h("div", { class: "roles" }, Object.entries(ROLE_COPY).map(([role, [title, points]]) => h("div", { class: "role" },
       h("h2", {}, title), h("ul", {}, points.map((p) => h("li", {}, p))),
-      accounts.filter((a) => a.role === role).map((a) => h("button", { class: "acct", onclick: () => { user.value = a.username; pass.value = a.password; submit(); } }, "Sign in as " + a.name))))),
+      accounts.filter((a) => a.role === role).map((a) => h("button", { class: "acct", onclick: () => pick(a) }, (oneClick ? "Sign in as " : "Use account: ") + a.name))))),
     h("div", { class: "card" }, h("h2", {}, "Sign in"),
       h("form", { class: "loginform", onsubmit: submit },
         h("div", {}, h("label", { for: "u" }, "Username"), user), h("div", {}, h("label", { for: "p" }, "Password"), pass),
         h("button", { class: "primary", type: "submit" }, "Sign in")), err,
-      h("p", { class: "small muted" }, "Demo accounts are public because the site holds only public research data."))));
+      h("p", { class: "small muted" }, oneClick ? "Demo accounts are open on this local install because it holds only public research data."
+        : "Pick an account above, then enter the password you were given by the person who shared this demo."))));
 }
 
 /* ---------------------------------------------------------------- shell */

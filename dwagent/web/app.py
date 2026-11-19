@@ -8,6 +8,12 @@ Access model
     tools          the agent for a role only sees that role's tools, and the tool executor checks
                    scopes and record-level access again on every call
     audit          logins, denied requests and every tool call are written to the audit table
+
+Public mode (DWAGENT_PUBLIC=1, used behind a tunnel; start with ``python -m dwagent.web.public``)
+    secret         the process refuses to start with the default session secret
+    passwords      come from a local file outside the repository and are never sent to the browser
+    limits         each client may run a bounded number of agent jobs at once and per 10 minutes
+    headers        content security policy, no framing, no indexing, HSTS, secure cookie
 """
 from __future__ import annotations
 
@@ -34,7 +40,7 @@ from pydantic import BaseModel, Field
 from .. import clinical
 from ..catalog import get_registry, new_context
 from ..chat import chat_turn
-from ..config import ROOT, get_settings
+from ..config import DEFAULT_SECRET, ROOT, get_settings
 from ..ct import store as ct_store
 from ..llm.ollama import get_llm
 from ..memory.stores import LongTermMemory
@@ -49,20 +55,69 @@ from ..tools.registry import Principal
 STATIC = Path(__file__).parent / "static"
 COOKIE = "dw_session"
 SESSION_HOURS = 8
-app = FastAPI(title="Deepwise agent tools demo", docs_url="/api/docs", openapi_url="/api/openapi.json")
+PUBLIC = get_settings().public
+app = FastAPI(title="Deepwise agent tools demo", docs_url=None if PUBLIC else "/api/docs",
+              redoc_url=None, openapi_url=None if PUBLIC else "/api/openapi.json")
 pool = ThreadPoolExecutor(max_workers=4, thread_name_prefix="run")
 JOBS: dict[str, dict[str, Any]] = {}
 _login_fail: dict[str, list[float]] = {}
+_job_starts: dict[str, list[float]] = {}
 _lock = threading.Lock()
+# Agent jobs use the one local model, so they are rationed. "client" is account + address:
+# the demo accounts are shared, so the account alone would let one visitor block the others.
+MAX_RUNNING_PER_CLIENT = 2 if PUBLIC else 4
+MAX_RUNNING_TOTAL = 6 if PUBLIC else 12
+MAX_JOBS_PER_10_MIN = 20 if PUBLIC else 120
+CSP = ("default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; object-src 'none'; "
+       "base-uri 'none'; form-action 'self'; frame-ancestors 'none'")
+
+
+@app.middleware("http")
+async def security_headers(request: Request, call_next: Any) -> Response:
+    response = await call_next(request)
+    h = response.headers
+    h.setdefault("X-Content-Type-Options", "nosniff")
+    h.setdefault("X-Frame-Options", "DENY")
+    h.setdefault("Referrer-Policy", "no-referrer")
+    if not request.url.path.startswith("/api/docs"):
+        h.setdefault("Content-Security-Policy", CSP)
+    if request.url.path.startswith("/api/"):
+        h.setdefault("Cache-Control", "no-store")
+    if PUBLIC:
+        h.setdefault("Strict-Transport-Security", "max-age=31536000")
+        h.setdefault("X-Robots-Tag", "noindex, nofollow")
+    return response
 
 
 def _hash(password: str, salt: bytes) -> bytes:
     return hashlib.pbkdf2_hmac("sha256", password.encode(), salt, 120_000)
 
 
+def _passwords() -> dict[str, str]:
+    """Account passwords. Locally they are the demo values in the source. In public mode they
+    come from a file outside the repository, and a weak or missing setup stops the process."""
+    s = get_settings()
+    defaults = {u: pw for u, pw, *_ in DEMO_USERS}
+    if not s.public:
+        return defaults
+    if s.secret_key == DEFAULT_SECRET or len(s.secret_key) < 32:
+        raise RuntimeError("public mode: set DWAGENT_SECRET_KEY to a random value of at least 32 characters")
+    path = Path(s.credentials_file) if s.credentials_file else None
+    if path is None or not path.exists():
+        raise RuntimeError("public mode: DWAGENT_CREDENTIALS_FILE must name a JSON file of account passwords")
+    given = json.loads(path.read_text(encoding="utf-8"))
+    for user, default in defaults.items():
+        pw = given.get(user)
+        if not isinstance(pw, str) or len(pw) < 12 or pw == default:
+            raise RuntimeError(f"public mode: {user} needs its own password of at least 12 characters")
+    return {u: given[u] for u in defaults}
+
+
 _SALT = secrets.token_bytes(16)
-USERS = {u: {"hash": _hash(pw, _SALT), "role": role, "patient_id": pid, "name": name}
-         for u, pw, role, pid, name in DEMO_USERS}
+_PW = _passwords()
+USERS = {u: {"hash": _hash(_PW[u], _SALT), "role": role, "patient_id": pid, "name": name}
+         for u, _, role, pid, name in DEMO_USERS}
+del _PW
 
 
 def current(request: Request) -> Principal:
@@ -111,7 +166,7 @@ def login(body: Login, response: Response, request: Request) -> dict[str, Any]:
         raise HTTPException(401, "wrong username or password")
     token = jwt.encode({"sub": body.username, "exp": int(now + SESSION_HOURS * 3600)}, get_settings().secret_key, "HS256")
     response.set_cookie(COOKIE, token, httponly=True, samesite="lax", max_age=SESSION_HOURS * 3600,
-                        secure=request.url.scheme == "https")
+                        secure=PUBLIC or request.url.scheme == "https")
     return me(principal(body.username, u["role"], u["patient_id"], u["name"]))
 
 
@@ -133,9 +188,11 @@ def me(who: Principal = Depends(current)) -> dict[str, Any]:
 
 
 @app.get("/api/demo-accounts")
-def demo_accounts() -> list[dict[str, str]]:
-    """The demo credentials are public on purpose: this site holds only public research data."""
-    return [{"username": u, "password": pw, "role": role, "name": name} for u, pw, role, _, name in DEMO_USERS]
+def demo_accounts() -> list[dict[str, Any]]:
+    """Locally the demo passwords are shown so one click signs in. In public mode only the
+    account names are listed; whoever runs the site hands out the passwords."""
+    return [{"username": u, "password": None if PUBLIC else pw, "role": role, "name": name}
+            for u, pw, role, _, name in DEMO_USERS]
 
 
 # ----------------------------------------------------------------- agent chat (all roles)
@@ -144,22 +201,50 @@ class ChatIn(BaseModel):
     message: str = Field(min_length=1, max_length=2000)
 
 
-def _job(run_id: str, owner: str, fn: Any) -> None:
-    JOBS[run_id] = {"owner": owner, "status": "running", "result": None}
+def _client(who: Principal, request: Request) -> str:
+    return f"{who.user_id}|{request.client.host if request.client else '?'}"
+
+
+def admit(who: Principal, request: Request) -> str:
+    """Admission control for agent jobs. Returns the client key or raises 429."""
+    key, now = _client(who, request), time.time()
+    with _lock:
+        for rid in [r for r, j in JOBS.items() if j["status"] != "running" and now - j["at"] > 3600]:
+            del JOBS[rid]                               # finished jobs are kept for an hour
+        running = [j for j in JOBS.values() if j["status"] == "running"]
+        recent = [t for t in _job_starts.get(key, []) if now - t < 600]
+        reason = None
+        if sum(1 for j in running if j["client"] == key) >= MAX_RUNNING_PER_CLIENT:
+            reason = "wait for your current request to finish"
+        elif len(running) >= MAX_RUNNING_TOTAL:
+            reason = "the demo is busy, try again in a minute"
+        elif len(recent) >= MAX_JOBS_PER_10_MIN:
+            reason = "request limit reached, try again in a few minutes"
+        if reason is None:
+            _job_starts[key] = [*recent, now]
+    if reason:
+        get_db().audit(who.user_id, who.role, f"http:{request.method} {request.url.path}", "-", False, "rate limit")
+        raise HTTPException(429, reason)
+    return key
+
+
+def _job(run_id: str, owner: str, fn: Any, client: str = "") -> None:
+    JOBS[run_id] = {"owner": owner, "client": client, "status": "running", "result": None, "at": time.time()}
 
     def work() -> None:
         try:
-            JOBS[run_id].update(status="done", result=fn())
+            JOBS[run_id].update(status="done", result=fn(), at=time.time())
         except Exception as exc:  # surfaced to the UI instead of a hung spinner
             Tracer(get_db()).end_run(run_id, "failed", str(exc))
-            JOBS[run_id].update(status="error", result={"error": f"{type(exc).__name__}: {exc}"[:300]})
+            JOBS[run_id].update(status="error", result={"error": f"{type(exc).__name__}: {exc}"[:300]}, at=time.time())
     pool.submit(work)
 
 
 @app.post("/api/chat")
-def chat(body: ChatIn, who: Principal = Depends(current)) -> dict[str, str]:
+def chat(body: ChatIn, request: Request, who: Principal = Depends(current)) -> dict[str, str]:
+    client = admit(who, request)
     run_id = f"run_{uuid.uuid4().hex[:12]}"
-    _job(run_id, who.user_id, lambda: chat_turn(who, body.session_id, body.message, run_id=run_id))
+    _job(run_id, who.user_id, lambda: chat_turn(who, body.session_id, body.message, run_id=run_id), client)
     return {"run_id": run_id}
 
 
@@ -212,10 +297,11 @@ def my_report(who: Principal = Depends(require("patient"))) -> dict[str, Any]:
 
 
 @app.post("/api/my/explanation")
-def my_explanation(who: Principal = Depends(require("patient"))) -> dict[str, str]:
+def my_explanation(request: Request, who: Principal = Depends(require("patient"))) -> dict[str, str]:
     rep = clinical.get_report(get_db(), who.patient_id or "", signed_only=True)
     if rep is None:
         raise HTTPException(404, "no signed report yet")
+    client = admit(who, request)
     tr = Tracer(get_db())
     run_id = tr.start_run("patient_explanation", "explain my report", who.user_id, who.role)
 
@@ -224,7 +310,7 @@ def my_explanation(who: Principal = Depends(require("patient"))) -> dict[str, st
         tr.end_run(run_id, "completed" if res.ok else "failed")
         return {"valid": res.ok, "attempts": [{"n": a.number, "stage": a.stage, "errors": a.errors[:3]} for a in res.attempts],
                 "explanation": res.value.model_dump() if res.value else None}
-    _job(run_id, who.user_id, work)
+    _job(run_id, who.user_id, work, client)
     return {"run_id": run_id}
 
 
@@ -284,11 +370,12 @@ def study(patient_id: str, who: Principal = Depends(require("doctor"))) -> dict[
 
 
 @app.post("/api/studies/{patient_id}/pipeline")
-def start_pipeline(patient_id: str, who: Principal = Depends(require("doctor"))) -> dict[str, str]:
+def start_pipeline(patient_id: str, request: Request, who: Principal = Depends(require("doctor"))) -> dict[str, str]:
     try:
         ct_store.study_entry(patient_id)
     except ct_store.StudyNotFound:
         raise HTTPException(404, "no such study") from None
+    client = admit(who, request)
     tr = Tracer(get_db())
     run_id = tr.start_run("ct_study", patient_id, who.user_id, who.role)
 
@@ -297,7 +384,7 @@ def start_pipeline(patient_id: str, who: Principal = Depends(require("doctor")))
         res = ct_study.build().run(env, {"patient_id": patient_id})
         tr.end_run(run_id, res.status)
         return _pipeline_view(res.status, res.state, res.next_node)
-    _job(run_id, who.user_id, work)
+    _job(run_id, who.user_id, work, client)
     return {"run_id": run_id}
 
 
