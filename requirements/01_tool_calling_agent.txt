@@ -1,0 +1,76 @@
+TASK 01 - TOOL-CALLING AGENT CORE
+==================================
+Covers: Lab 1; concepts C1, C2, C4 (ReAct), C9, C10, C12, C17.
+
+Job
+---
+Build the loop every Deepwise agent runs on: the model reads the task, asks for tools, the
+application executes them, the results go back as observations, and this repeats until the model
+answers or a limit stops it. A plain LLM application answers once from its prompt; this loop lets
+the model decide which facts to fetch and in what order.
+
+Requirements
+------------
+R1  Loop. model response -> tool execution -> observation -> next model response. Parallel tool
+    calls in one model response are all executed before the next model call.
+R2  At least two tools. The doctor agent is offered ten atomic tools, including calculator,
+    check_series_quality (DICOM archive lookup), get_confirmed_findings, lung_rads_category,
+    search_guideline (knowledge base) and search_similar_cases (HTTP call to deepwise_rag).
+R3  Tool definition. Each tool has a name, a description written for the model, and a Pydantic
+    argument model. The JSON Schema sent to the model is generated from that model, with enums,
+    ranges and per-field descriptions. extra="forbid" on every argument model.
+R4  Function calling contract. The model only produces a request {name, arguments}. The
+    application validates and executes it; the model never runs anything.
+R5  Invalid arguments. A schema violation or a domain error (for example a part-solid nodule
+    without a solid component) returns {ok:false, error_kind:"invalid_arguments", error, hint} as
+    the observation. The run continues.
+R6  Unknown tool. A tool name that does not exist, or that was not offered to this agent, returns
+    error_kind "unknown_tool" with the list of available tools.
+R7  Timeouts. Every tool has a timeout. A timed-out call returns error_kind "timeout".
+R8  Retries. Only retryable failures are retried (transient upstream errors, and timeouts of
+    idempotent tools), at most max_retries times, with exponential backoff capped at 4 s.
+R9  Idempotency. A side-effecting tool executes once per run per argument set; a repeat returns
+    the stored result. Idempotent reads are memoised per run.
+R10 Stopping conditions, all explicit and recorded as stop_reason:
+    final_answer, final_answer_unverified, max_iterations, token_budget, wall_clock,
+    loop_detected, tool_failures, awaiting_approval, llm_error.
+R11 Limits. max_iterations (default 8), token budget, wall-clock limit, consecutive tool failure
+    limit (3), identical-call repeat limit (3). When a limit stops the run the model gets one
+    final call without tools to say what it has and what is unfinished.
+R12 Grounding guard. Before a final answer is accepted, a deterministic check compares it with
+    the tool results of the run: every Lung-RADS category stated must have been returned by a
+    tool, every bracketed citation must be an id a tool returned, and an announcement of intent
+    ("I will now...") is not an answer. Problems are sent back, at most twice; an answer that
+    still fails is returned with a visible "Not verified" note.
+R13 Observability. One trace span per model call and per tool call: latency, prompt and
+    completion tokens, attempts, error kind.
+
+Code
+----
+dwagent/agent/loop.py        run_agent, AgentConfig, AgentState
+dwagent/agent/guards.py      grounding_check
+dwagent/tools/registry.py    Tool, ToolRegistry, Principal, ToolError
+dwagent/tools/executor.py    execute_tool: discovery, authorization, validation, approval,
+                             idempotency, timeout, retry, trace
+dwagent/tools/builtin.py     the tool catalogue
+dwagent/llm/ollama.py        model adapter; dwagent/llm/scripted.py for tests
+
+Verification on real data
+-------------------------
+python scripts/verify.py t01    ->  verification/t01_tool_calling_agent.json
+  a. The doctor agent, with atomic tools only, answers the same question for each of the 10 CT
+     studies. Scored on the exam category it commits to on its last line, against the category
+     computed by code from the reader-confirmed findings.
+  b. Fault injection with the real model: retrieval service down (transient error, retries, then
+     the agent reports the failure and still answers the other half); a tool call that must be
+     repaired; a tool slower than its timeout; a step limit of 3.
+  verification/t01_before_guards.json keeps the first run, made before R12 and before the
+  is_new / is_growing field descriptions were clarified, for comparison.
+python -m pytest tests -q       ->  60 tests (agent core with a scripted model, domain rules)
+
+Known limits
+------------
+A timed-out tool thread cannot be killed in Python; the worker is abandoned and the tool must be
+safe to abandon. Long image analysis should run in a subprocess in production.
+With atomic tools the model must aggregate per-finding categories into the exam category itself
+and sometimes does not; task 05 measures what packaging that rule into a skill changes.

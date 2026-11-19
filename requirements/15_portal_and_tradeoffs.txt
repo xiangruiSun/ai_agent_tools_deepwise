@@ -1,0 +1,74 @@
+TASK 15 - WEB PORTAL AND PRODUCTION TRADE-OFFS
+===============================================
+Covers: concept C21 (reliability, latency, cost, security; workflow versus agent versus
+multi-agent), and the presentation site with three kinds of login.
+
+Part A - the portal
+-------------------
+R1  One FastAPI process serves the API and a single-page app (plain JavaScript, no build step).
+R2  Three roles with different pages and different agent tools:
+      Patient    My report, Ask the assistant, What the assistant can do
+      Doctor     Worklist and study view, Sign-off queue, Copilot, Tools and limits
+      Employee   Operations, Verification, Architecture, Audit log, Assistant, Tools and limits
+R3  Login. Demo accounts; passwords stored as PBKDF2-SHA256 hashes; session in a signed,
+    httpOnly, SameSite cookie valid 8 hours; 8 failed attempts per address in 5 minutes locks
+    that address out; logins are audited.
+R4  The role is read from the server-side user table on every request. Nothing in a request body
+    can change role or patient binding.
+R5  Every route declares the roles allowed; a refused request returns 403 and is audited.
+R6  Agent runs are started as background jobs and polled, so the page shows steps as they
+    happen. A run can be read by its owner; staff see other people's runs redacted.
+R7  Model output is rendered as text nodes only, never as HTML.
+R8  Every answer carries its trace panel; pages show a "research demonstration, not a medical
+    device" banner; the login page states what is simulated.
+R9  The example dataset is the 10 public LIDC-IDRI studies; three of them have patient accounts.
+
+Part B - when to use what (to be read with the measured numbers in verification/REPORT.md)
+-----------------------------------------------------------------------------------------
+    Use a workflow (fixed code path) when the steps and their order are known.
+        Here: the CT study pipeline. Ten of its eleven nodes are code; the model drafts text at
+        one node and is checked. Cheapest, fastest, most reliable, fully testable.
+    Use a single agent when the user's question is open and the tool sequence cannot be known in
+    advance.
+        Here: the three chat assistants. Reliability comes from typed tools, limits, the
+        grounding guard, and packaging fixed procedures as skills.
+    Use several agents when the work splits into parts that need different context or checking
+    by an independent role, and the extra tokens and time are acceptable.
+        Here: the assessment brief. Whether it paid off is a measured result of task 08.
+
+    Trade-off      Lever in this system
+    Reliability    deterministic categories; schema plus business rules; bounded repair then a
+                   template; idempotent writes; checkpoints; human sign-off
+    Latency        skills cut model round trips; no model call for normal studies; per-run
+                   memoisation of reads; detector result cache
+    Cost           token budgets per run; context fitting; local model (no per-token charge,
+                   fixed GPU cost)
+    Security       scopes and record-level checks in the executor; role checks in HTTP; patient
+                   binding in the session; redacted staff traces; audit log; egress guard;
+                   approval for writes
+
+Part C - going online
+---------------------
+The site needs a host that can reach a model. Options, to be chosen by the project owner:
+  a. This PC with the local model, exposed through a tunnel. Online only while the PC is on.
+  b. A cloud host with a hosted model key (set DWAGENT_PROFILE=cloud and a provider adapter).
+     Only the public demo data may be sent to a hosted model.
+Before any public exposure: set DWAGENT_SECRET_KEY, serve over HTTPS, and note that
+PMC-Patients is licensed for non-commercial use only.
+
+Verification
+------------
+Browser run on the local portal (2026-11-18), all three logins:
+  doctor    worklist, study view with image and findings, pipeline to sign-off, approve, signed
+  patient   signed report and image shown; explanation valid on first attempt; other patient's
+            image, worklist, operations, pipeline start and approvals all returned 403
+  employee  operations, verification, architecture and audit returned 200; patient report, study
+            and worklist returned 403
+The measured comparison of workflow, single agent and multi-agent is in verification/REPORT.md
+(tasks 03, 05 and 08).
+
+Known limits
+------------
+Demo accounts and an in-memory job table: restarting the server forgets running chat jobs
+(pipeline runs survive through their checkpoints). No password reset, no multi-factor login, no
+rate limit on agent calls.

@@ -1,0 +1,49 @@
+TASK 13 - COMPANY EMPLOYEE ACCESS
+==================================
+Deepwise focus: Deepwise staff who operate and improve the system installed in hospitals.
+
+Job
+---
+Let a platform or data engineer see whether the agents are healthy, what they cost, where they
+fail and what the data looks like, without ever seeing patient content.
+
+Requirements
+------------
+R1  Operations view: runs, model calls, tokens, model latency p50 and p95, tool error rate,
+    retries, runs by status, errors by kind, per-tool p95 latency.
+R2  Node health (node_health): model server reachable and the configured model installed,
+    retrieval service ready, GPU memory, free disk, studies in the archive, pending approvals.
+R3  Run list and traces for staff are redacted: agent, role, status, counts, timings, error
+    kinds. No task text, no answers, no tool inputs or outputs, because those can contain
+    patient content. Redaction is done on the server (Tracer.redacted_events).
+R4  Audit log: logins, every tool call, every denied request, with user, role and action.
+R5  Verification view: the recorded evidence of every job task.
+R6  Architecture view: the pipeline graph, and for every tool its scopes, timeout, retries,
+    write and approval flags, and which roles are offered it.
+R7  Assistant (dwagent/profiles.py EMPLOYEE). Tools: ops_run_stats, ops_recent_failures,
+    node_health, dataset_overview, deid_audit, build_cohort, detector_vs_readers,
+    search_guideline, calculator, remember.
+R8  Staff cannot read reports, findings or images: no tool in the staff toolset returns them,
+    get_report refuses the employee role by record-level rule, and the report, study, worklist
+    and image routes return 403 for the role.
+
+Code
+----
+dwagent/tools/builtin.py (ops_run_stats, ops_recent_failures, node_health, dataset tools)
+dwagent/runtime/trace.py (redacted_events), dwagent/web/app.py (/api/ops/*)
+
+Verification on real data
+-------------------------
+python scripts/verify.py t13    ->  verification/t13_employee_access.json
+  Five questions through the chat path with the real model: node health; run statistics and
+  error kinds; a cohort count plus local study count; a de-identification audit plus a
+  detector-versus-reader comparison; and a request for a patient's signed report, which must be
+  refused. Also recorded: seven-day statistics from the real traces, and a sample of a redacted
+  trace of a patient's run with a check that it carries no payload fields.
+Browser check on the running portal (2026-11-18): operations, verification, architecture and
+audit pages 200 for the employee; patient report, study and worklist routes 403.
+
+Known limits
+------------
+One node. A fleet view across hospitals would aggregate these same statistics from each site;
+that aggregation service is not built.

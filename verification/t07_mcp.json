@@ -1,0 +1,172 @@
+{
+  "server": {
+    "name": "deepwise-ct",
+    "version": "",
+    "protocol_version": "2026-07-28"
+  },
+  "transport": "stdio",
+  "connect_and_first_call_s": 1.7,
+  "discovered_tools": [
+    {
+      "name": "list_ct_studies",
+      "required": [],
+      "properties": []
+    },
+    {
+      "name": "check_series_quality",
+      "required": [
+        "patient_id"
+      ],
+      "properties": [
+        "patient_id"
+      ]
+    },
+    {
+      "name": "run_nodule_detector",
+      "required": [
+        "patient_id"
+      ],
+      "properties": [
+        "patient_id"
+      ]
+    },
+    {
+      "name": "lung_rads_category",
+      "required": [
+        "nodule_type",
+        "mean_diameter_mm"
+      ],
+      "properties": [
+        "benign_calcification",
+        "is_baseline",
+        "is_growing",
+        "is_new",
+        "mean_diameter_mm",
+        "nodule_type",
+        "solid_component_mm",
+        "suspicious_features"
+      ]
+    },
+    {
+      "name": "search_guideline",
+      "required": [
+        "query"
+      ],
+      "properties": [
+        "k",
+        "query"
+      ]
+    },
+    {
+      "name": "get_report",
+      "required": [
+        "patient_id"
+      ],
+      "properties": [
+        "patient_id"
+      ]
+    }
+  ],
+  "direct_call_result": {
+    "patient_id": "LIDC-IDRI-0005",
+    "passed": true,
+    "issues": [],
+    "warnings": [
+      "contrast-enhanced series: density-based nodule typing is less reliable"
+    ],
+    "slice_thickness_mm": 2.5,
+    "n_slices": 133,
+    "kernel": "STANDARD",
+    "manufacturer": "GE MEDICAL SYSTEMS"
+  },
+  "host_allowlist": [
+    "check_series_quality",
+    "lung_rads_category",
+    "run_nodule_detector",
+    "search_guideline"
+  ],
+  "tools_offered_to_model": [
+    "check_series_quality",
+    "lung_rads_category",
+    "run_nodule_detector",
+    "search_guideline"
+  ],
+  "get_report_hidden_by_host": true,
+  "agent_over_mcp": {
+    "status": "completed",
+    "tool_log": [
+      {
+        "tool": "check_series_quality",
+        "ok": true,
+        "error_kind": null,
+        "attempts": 1,
+        "cached": false,
+        "latency_ms": 35.8
+      },
+      {
+        "tool": "run_nodule_detector",
+        "ok": true,
+        "error_kind": null,
+        "attempts": 1,
+        "cached": false,
+        "latency_ms": 10.8
+      },
+      {
+        "tool": "search_guideline",
+        "ok": true,
+        "error_kind": null,
+        "attempts": 1,
+        "cached": false,
+        "latency_ms": 10.2
+      },
+      {
+        "tool": "lung_rads_category",
+        "ok": true,
+        "error_kind": null,
+        "attempts": 1,
+        "cached": false,
+        "latency_ms": 6.2
+      }
+    ],
+    "iterations": 5,
+    "tokens": 12109,
+    "answer": "The CT series for patient LIDC-IDRI-0212 is usable, as confirmed by the check_series_quality tool [passed: true, slice_thickness_mm: 2.5, n_slices: 133, kernel: STANDARD, manufacturer: GE MEDICAL SYSTEMS] [check_series_quality].\n\nThe nodule detector identified 12 unreviewed candidates, but none of them are confirmed findings. Therefore, the exam category is 1 (negative) [run_nodule_detector].\n\nFor a 5.5 mm solid nodule at baseline, the Lung-RADS category is 2 (benign), with management recommendations of continuing annual screening with low-dose CT in 12 months [ACR Lung-RADS v2022].\n\n[Not veri",
+    "answer_repairs": 2,
+    "stop_reason": "final_answer_unverified",
+    "category_correct": true
+  },
+  "server_side_authorization_matrix": {
+    "no_token": {
+      "list_ct_studies": "unauthenticated",
+      "run_nodule_detector:0005": "unauthenticated",
+      "get_report:0005": "unauthenticated",
+      "get_report:0001": "unauthenticated",
+      "search_guideline": "unauthenticated"
+    },
+    "patient_0005": {
+      "list_ct_studies": "unauthorized",
+      "run_nodule_detector:0005": "unauthorized",
+      "get_report:0005": "allowed",
+      "get_report:0001": "unauthorized",
+      "search_guideline": "unauthorized"
+    },
+    "employee": {
+      "list_ct_studies": "unauthorized",
+      "run_nodule_detector:0005": "unauthorized",
+      "get_report:0005": "unauthorized",
+      "get_report:0001": "unauthorized",
+      "search_guideline": "allowed"
+    },
+    "doctor": {
+      "list_ct_studies": "allowed",
+      "run_nodule_detector:0005": "allowed",
+      "get_report:0005": "allowed",
+      "get_report:0001": "allowed",
+      "search_guideline": "allowed"
+    }
+  },
+  "task": "t07_mcp",
+  "ran_at": "2026-11-18 22:49:23",
+  "model": "qwen3:14b",
+  "data": "LIDC-IDRI subset (10 chest CT studies, TCIA, CC BY 3.0); PMC-Patients subset (20,400 cases)"
+}

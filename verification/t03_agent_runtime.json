@@ -1,0 +1,536 @@
+{
+  "task": "t03_agent_runtime",
+  "ran_at": "2026-11-18 22:00:03",
+  "model": "qwen3:14b",
+  "data": "LIDC-IDRI subset (10 chest CT studies, TCIA, CC BY 3.0); PMC-Patients subset (20,400 cases)",
+  "graph": {
+    "name": "ct_study",
+    "entry": "intake",
+    "nodes": [
+      "intake",
+      "quality_gate",
+      "reject",
+      "detect",
+      "review",
+      "categorize",
+      "draft_normal",
+      "draft",
+      "critical_check",
+      "save_draft",
+      "signoff"
+    ],
+    "edges": {
+      "intake": [
+        "quality_gate"
+      ],
+      "quality_gate": [
+        "detect",
+        "reject"
+      ],
+      "reject": [
+        "__end__"
+      ],
+      "detect": [
+        "review"
+      ],
+      "review": [
+        "categorize",
+        "draft_normal"
+      ],
+      "categorize": [
+        "draft"
+      ],
+      "draft_normal": [
+        "critical_check"
+      ],
+      "draft": [
+        "critical_check"
+      ],
+      "critical_check": [
+        "save_draft"
+      ],
+      "save_draft": [
+        "signoff"
+      ],
+      "signoff": [
+        "__end__"
+      ]
+    }
+  },
+  "studies": [
+    {
+      "patient_id": "LIDC-IDRI-0028",
+      "run_id": "run_e1a15f8f64ec",
+      "first_run": {
+        "status": "interrupted",
+        "detail": "awaiting_signoff",
+        "path": [
+          "intake",
+          "quality_gate",
+          "detect",
+          "review",
+          "draft_normal",
+          "critical_check",
+          "save_draft"
+        ]
+      },
+      "after_approval": "completed",
+      "outcome": "signed",
+      "exam_category": "1",
+      "truth_exam": "1",
+      "critical": false,
+      "draft": {
+        "source": "template",
+        "attempts": 0,
+        "reason": "no findings"
+      },
+      "node_ms": {
+        "intake": 23.6,
+        "quality_gate": 2.4,
+        "detect": 2.6,
+        "review": 4429.2,
+        "draft_normal": 0.7,
+        "critical_check": 0.6,
+        "save_draft": 4.9,
+        "signoff": 3.1
+      },
+      "checkpoints": 10,
+      "tokens": 0,
+      "llm_calls": 0,
+      "tool_calls": 7,
+      "tool_errors": 0,
+      "wall_s": 4.5
+    },
+    {
+      "patient_id": "LIDC-IDRI-0062",
+      "run_id": "run_116f412bae03",
+      "first_run": {
+        "status": "interrupted",
+        "detail": "awaiting_signoff",
+        "path": [
+          "intake",
+          "quality_gate",
+          "detect",
+          "review",
+          "draft_normal",
+          "critical_check",
+          "save_draft"
+        ]
+      },
+      "after_approval": "completed",
+      "outcome": "signed",
+      "exam_category": "1",
+      "truth_exam": "1",
+      "critical": false,
+      "draft": {
+        "source": "template",
+        "attempts": 0,
+        "reason": "no findings"
+      },
+      "node_ms": {
+        "intake": 19.6,
+        "quality_gate": 2.3,
+        "detect": 2.4,
+        "review": 3697.2,
+        "draft_normal": 0.7,
+        "critical_check": 0.6,
+        "save_draft": 4.2,
+        "signoff": 2.9
+      },
+      "checkpoints": 10,
+      "tokens": 0,
+      "llm_calls": 0,
+      "tool_calls": 7,
+      "tool_errors": 0,
+      "wall_s": 3.7
+    },
+    {
+      "patient_id": "LIDC-IDRI-0212",
+      "run_id": "run_556592904858",
+      "first_run": {
+        "status": "interrupted",
+        "detail": "awaiting_signoff",
+        "path": [
+          "intake",
+          "quality_gate",
+          "detect",
+          "review",
+          "categorize",
+          "draft",
+          "critical_check",
+          "save_draft"
+        ]
+      },
+      "after_approval": "completed",
+      "outcome": "signed",
+      "exam_category": "1",
+      "truth_exam": "1",
+      "critical": false,
+      "draft": {
+        "source": "model",
+        "attempts": 1
+      },
+      "node_ms": {
+        "intake": 22.0,
+        "quality_gate": 2.2,
+        "detect": 2.7,
+        "review": 3727.7,
+        "categorize": 3.8,
+        "draft": 3851.1,
+        "critical_check": 0.6,
+        "save_draft": 4.2,
+        "signoff": 3.0
+      },
+      "checkpoints": 11,
+      "tokens": 653,
+      "llm_calls": 1,
+      "tool_calls": 9,
+      "tool_errors": 0,
+      "wall_s": 7.6
+    },
+    {
+      "patient_id": "LIDC-IDRI-0516",
+      "run_id": "run_350feb0f6fc0",
+      "first_run": {
+        "status": "interrupted",
+        "detail": "awaiting_signoff",
+        "path": [
+          "intake",
+          "quality_gate",
+          "detect",
+          "review",
+          "categorize",
+          "draft",
+          "critical_check",
+          "save_draft"
+        ]
+      },
+      "after_approval": "completed",
+      "outcome": "signed",
+      "exam_category": "2",
+      "truth_exam": "2",
+      "critical": false,
+      "draft": {
+        "source": "model",
+        "attempts": 1
+      },
+      "node_ms": {
+        "intake": 19.7,
+        "quality_gate": 2.2,
+        "detect": 2.6,
+        "review": 5509.6,
+        "categorize": 4.7,
+        "draft": 5287.1,
+        "critical_check": 0.7,
+        "save_draft": 4.2,
+        "signoff": 3.4
+      },
+      "checkpoints": 11,
+      "tokens": 883,
+      "llm_calls": 1,
+      "tool_calls": 10,
+      "tool_errors": 0,
+      "wall_s": 10.8
+    },
+    {
+      "patient_id": "LIDC-IDRI-0126",
+      "run_id": "run_5b9deccffbea",
+      "first_run": {
+        "status": "interrupted",
+        "detail": "awaiting_signoff",
+        "path": [
+          "intake",
+          "quality_gate",
+          "detect",
+          "review",
+          "categorize",
+          "draft",
+          "critical_check",
+          "save_draft"
+        ]
+      },
+      "after_approval": "completed",
+      "outcome": "signed",
+      "exam_category": "3",
+      "truth_exam": "3",
+      "critical": false,
+      "draft": {
+        "source": "model",
+        "attempts": 1
+      },
+      "node_ms": {
+        "intake": 23.3,
+        "quality_gate": 2.3,
+        "detect": 2.6,
+        "review": 3782.9,
+        "categorize": 4.5,
+        "draft": 5655.2,
+        "critical_check": 0.6,
+        "save_draft": 4.5,
+        "signoff": 3.2
+      },
+      "checkpoints": 11,
+      "tokens": 891,
+      "llm_calls": 1,
+      "tool_calls": 10,
+      "tool_errors": 0,
+      "wall_s": 9.5
+    },
+    {
+      "patient_id": "LIDC-IDRI-0200",
+      "run_id": "run_7c4c03c43f8d",
+      "first_run": {
+        "status": "interrupted",
+        "detail": "awaiting_signoff",
+        "path": [
+          "intake",
+          "quality_gate",
+          "detect",
+          "review",
+          "categorize",
+          "draft",
+          "critical_check",
+          "save_draft"
+        ]
+      },
+      "after_approval": "completed",
+      "outcome": "signed",
+      "exam_category": "3",
+      "truth_exam": "3",
+      "critical": false,
+      "draft": {
+        "source": "model",
+        "attempts": 1
+      },
+      "node_ms": {
+        "intake": 21.0,
+        "quality_gate": 2.1,
+        "detect": 2.6,
+        "review": 2711.9,
+        "categorize": 4.6,
+        "draft": 5312.6,
+        "critical_check": 0.6,
+        "save_draft": 4.3,
+        "signoff": 3.4
+      },
+      "checkpoints": 11,
+      "tokens": 864,
+      "llm_calls": 1,
+      "tool_calls": 10,
+      "tool_errors": 0,
+      "wall_s": 8.1
+    },
+    {
+      "patient_id": "LIDC-IDRI-0005",
+      "run_id": "run_9368e46e160a",
+      "first_run": {
+        "status": "interrupted",
+        "detail": "awaiting_signoff",
+        "path": [
+          "intake",
+          "quality_gate",
+          "detect",
+          "review",
+          "categorize",
+          "draft",
+          "critical_check",
+          "save_draft"
+        ]
+      },
+      "after_approval": "completed",
+      "outcome": "signed",
+      "exam_category": "4A",
+      "truth_exam": "4A",
+      "critical": false,
+      "draft": {
+        "source": "model",
+        "attempts": 1
+      },
+      "node_ms": {
+        "intake": 22.9,
+        "quality_gate": 2.3,
+        "detect": 2.6,
+        "review": 4071.9,
+        "categorize": 5.8,
+        "draft": 7522.8,
+        "critical_check": 0.6,
+        "save_draft": 4.5,
+        "signoff": 3.1
+      },
+      "checkpoints": 11,
+      "tokens": 1152,
+      "llm_calls": 1,
+      "tool_calls": 11,
+      "tool_errors": 0,
+      "wall_s": 11.6
+    },
+    {
+      "patient_id": "LIDC-IDRI-0008",
+      "run_id": "run_796d9e76b6ca",
+      "first_run": {
+        "status": "interrupted",
+        "detail": "awaiting_signoff",
+        "path": [
+          "intake",
+          "quality_gate",
+          "detect",
+          "review",
+          "categorize",
+          "draft",
+          "critical_check",
+          "save_draft"
+        ]
+      },
+      "after_approval": "completed",
+      "outcome": "signed",
+      "exam_category": "4A",
+      "truth_exam": "4A",
+      "critical": false,
+      "draft": {
+        "source": "model",
+        "attempts": 1
+      },
+      "node_ms": {
+        "intake": 23.0,
+        "quality_gate": 2.2,
+        "detect": 2.6,
+        "review": 3300.6,
+        "categorize": 4.6,
+        "draft": 6148.5,
+        "critical_check": 0.8,
+        "save_draft": 4.3,
+        "signoff": 3.2
+      },
+      "checkpoints": 11,
+      "tokens": 984,
+      "llm_calls": 1,
+      "tool_calls": 10,
+      "tool_errors": 0,
+      "wall_s": 9.5
+    },
+    {
+      "patient_id": "LIDC-IDRI-0001",
+      "run_id": "run_6b7517636ef2",
+      "first_run": {
+        "status": "interrupted",
+        "detail": "awaiting_signoff",
+        "path": [
+          "intake",
+          "quality_gate",
+          "detect",
+          "review",
+          "categorize",
+          "draft",
+          "critical_check",
+          "save_draft"
+        ]
+      },
+      "after_approval": "completed",
+      "outcome": "signed",
+      "exam_category": "4X",
+      "truth_exam": "4X",
+      "critical": true,
+      "draft": {
+        "source": "model",
+        "attempts": 1
+      },
+      "node_ms": {
+        "intake": 22.9,
+        "quality_gate": 2.1,
+        "detect": 2.5,
+        "review": 4106.3,
+        "categorize": 3.1,
+        "draft": 4495.5,
+        "critical_check": 0.6,
+        "save_draft": 4.3,
+        "signoff": 3.4
+      },
+      "checkpoints": 11,
+      "tokens": 765,
+      "llm_calls": 1,
+      "tool_calls": 9,
+      "tool_errors": 0,
+      "wall_s": 8.7
+    },
+    {
+      "patient_id": "LIDC-IDRI-0003",
+      "run_id": "run_86b98213f498",
+      "first_run": {
+        "status": "interrupted",
+        "detail": "awaiting_signoff",
+        "path": [
+          "intake",
+          "quality_gate",
+          "detect",
+          "review",
+          "categorize",
+          "draft",
+          "critical_check",
+          "save_draft"
+        ]
+      },
+      "after_approval": "completed",
+      "outcome": "signed",
+      "exam_category": "4B",
+      "truth_exam": "4B",
+      "critical": true,
+      "draft": {
+        "source": "model",
+        "attempts": 1
+      },
+      "node_ms": {
+        "intake": 23.8,
+        "quality_gate": 3.3,
+        "detect": 2.4,
+        "review": 3644.4,
+        "categorize": 7.1,
+        "draft": 8912.4,
+        "critical_check": 0.6,
+        "save_draft": 4.3,
+        "signoff": 2.9
+      },
+      "checkpoints": 11,
+      "tokens": 1369,
+      "llm_calls": 1,
+      "tool_calls": 12,
+      "tool_errors": 0,
+      "wall_s": 12.6
+    }
+  ],
+  "summary": {
+    "signed": 10,
+    "of": 10,
+    "exam_category_correct": 10,
+    "model_drafts": 8,
+    "template_drafts": 2,
+    "template_fallbacks": 0,
+    "critical_flagged": 2,
+    "median_wall_s": 9.1,
+    "median_tokens": 873.5
+  },
+  "crash_and_resume": {
+    "crashed_status": "failed",
+    "crashed_at": "draft",
+    "error": "RuntimeError: simulated process crash during draft",
+    "resumed_status": "interrupted",
+    "resumed_waiting_for": "awaiting_signoff",
+    "nodes_before_crash": [
+      "intake",
+      "quality_gate",
+      "detect",
+      "review",
+      "categorize"
+    ],
+    "detector_runs_total": 1,
+    "detector_not_repeated": true
+  },
+  "human_rejection": {
+    "status": "completed",
+    "outcome": "signoff_rejected"
+  },
+  "step_limit": {
+    "status": "limit",
+    "detail": "max_steps",
+    "stopped_before": "review"
+  }
+}

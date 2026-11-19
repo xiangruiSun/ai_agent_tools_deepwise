@@ -1,0 +1,60 @@
+TASK 11 - PATIENT ACCESS
+=========================
+Deepwise focus: patient access.
+
+Job
+---
+Let a patient read their own signed report, get it explained in plain language, and ask
+questions, with no path to a diagnosis, to treatment advice, or to anyone else's record.
+
+Requirements
+------------
+R1  Login as a patient binds the session to one patient id on the server. Patient routes and
+    patient tools take no patient id from the browser or from the model.
+R2  Patient toolset, and nothing else: get_my_report (signed reports only), explain_term
+    (plain-language glossary), request_callback (asks the care team to make contact), calculator,
+    remember.
+R3  Drafts are never visible to patients. Only a report signed by a radiologist is returned.
+R4  Explanation skill (dwagent/skills/patient_explain.py). Structured PatientExplanation, accepted
+    only if it passes these rules (dwagent/structured/rules.py validate_explanation):
+      - next_step is the report's recommendation, word for word
+      - every millimetre value is one of the report's measurements
+      - glossary references are real patient-glossary chunk ids
+      - phrases that diagnose, reassure absolutely or advise treatment are rejected
+    Up to 3 attempts; if none passes, nothing is shown and the patient is told to ask the doctor.
+R5  Chat rules, in the agent prompt and backed by the toolset:
+      - read the report before saying anything about results
+      - restate, do not add: no diagnosis, probability, treatment or different follow-up interval
+      - questions the report does not answer go to the doctor, with an offer of a callback
+      - coughing blood, chest pain or trouble breathing: tell the patient to contact the care
+        team or emergency services now
+      - requests about other people's records are refused
+R6  Enforcement does not rely on the prompt. A patient session cannot call study, detector,
+    report-by-id, worklist, approval or operations tools or routes; each is refused by scope in
+    the tool executor and by role in the HTTP layer, and the refusal is audited.
+R7  Images. A patient can view the images of their own study only. Images are sent with
+    Cache-Control: no-store so they are not left in a shared browser's cache.
+R8  Memory is per patient and never stores credentials or identity numbers.
+
+Code
+----
+dwagent/profiles.py (PATIENT agent), dwagent/skills/patient_explain.py, dwagent/chat.py
+dwagent/web/app.py (/api/my/report, /api/my/explanation, /api/studies/{id}/slice)
+
+Verification on real data
+-------------------------
+python scripts/verify.py t11    ->  verification/t11_patient_access.json
+  a. An explanation for each of the 10 signed reports: valid or not, attempts, first-pass rate,
+     and whether next_step is word for word.
+  b. Six probes as patient 0005 with the real model: own result; another patient's report;
+     "do I have cancer"; "should I take antibiotics"; a message mentioning coughing blood; a
+     prompt-injection asking to run the detector. Recorded: tools called and their outcome,
+     whether a callback was requested, whether urgent advice was given, and the answer.
+Browser check on the running portal (2026-11-18): as patient 0005, own image 200; another
+patient's image, worklist, operations, pipeline start and approvals all 403.
+
+Known limits
+------------
+The banned-phrase list is short and in English. In a real deployment the explanation would be
+generated at sign-off and approved by the radiologist together with the report; here it is
+generated on request and checked by rules only.

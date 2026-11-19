@@ -1,0 +1,20 @@
+# Environments and caches
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Data is downloaded by scripts/, never committed (see data/README.md)
+data/lidc/
+data/pmc/
+data/runtime/
+!data/README.md
+
+# Reference checkout of the earlier RAG project and its environment
+_ref/
+
+# Local secrets
+.env
+
+# Verification console log (the JSON evidence and REPORT.md are committed)
+verification/run.log

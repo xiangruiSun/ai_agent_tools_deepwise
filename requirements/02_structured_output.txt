@@ -1,0 +1,70 @@
+TASK 02 - STRUCTURED OUTPUT AND VALIDATION
+===========================================
+Covers: Lab 2; concept C11.
+
+Job
+---
+A CT report draft, a patient explanation, a training label and a cohort query must each be a
+typed object, not free text, and must be proven consistent with the evidence before anything
+uses it.
+
+Requirements
+------------
+R1  Schemas in Pydantic (dwagent/structured/schemas.py):
+    CTReport            technique, comparison, findings[Finding], impression, exam_lung_rads,
+                        recommendation, guideline_citations, limitations
+    Finding             finding_id, laterality, zone, nodule_type, mean_diameter_mm,
+                        solid_component_mm, slice_index, lung_rads, description
+    PatientExplanation  summary, what_was_found, terms, next_step, questions_for_doctor,
+                        urgent_escalation
+    CaseLabels, CohortQuery   for task 10
+    All use extra="forbid", enums for categorical fields and numeric ranges.
+R2  Every field a rule checks is required (nullable where needed, never optional). Measured
+    reason: with schema-constrained decoding the model silently dropped the optional
+    solid_component_mm and two real studies fell back to the template until it was made required.
+R3  Generation (dwagent/structured/generate.py). Two modes: schema-constrained decoding (the
+    JSON Schema is passed to the model server), and free-text JSON (schema in the prompt, JSON
+    extracted from the reply, tolerating code fences and surrounding prose).
+R4  Three validation layers, kept separate:
+    Schema validation        Is it well formed? Types, enums, ranges, required fields. Pydantic.
+    Business-rule validation Is it true to the evidence? (dwagent/structured/rules.py)
+       - every confirmed finding is reported exactly once and no other finding appears
+       - laterality, zone, type, slice and measurements equal the measured values
+       - each finding's category equals the one the deterministic Lung-RADS code computes
+       - the exam category is the most suspicious finding's category and is stated in the
+         impression as "Lung-RADS <category>"
+       - the recommendation is the management text for that category
+       - every "N mm" in free text is one of the measurements
+       - every guideline citation is a real knowledge-base chunk id
+    Authorization            May this caller do this with this record? Decided from the
+                             signed-in principal in the tool executor: who may save a draft, who
+                             may sign (and only with human approval), who may read which report.
+    A report can pass the first two and still be refused by the third.
+R5  Bounded repair. At most 3 attempts. After a failed attempt the model receives its own reply
+    and a numbered list of the exact errors. The function never returns an object that failed:
+    it returns value=None with the full attempt history.
+R6  Fallback. If the draft cannot be validated the pipeline uses a deterministic template built
+    only from the evidence and labels the report as such.
+R7  Each attempt records stage (json, schema, rules, ok, llm_error), errors, tokens, latency.
+
+Code
+----
+dwagent/structured/schemas.py, rules.py, generate.py
+dwagent/pipelines/ct_study.py   draft node and template_report
+dwagent/skills/patient_explain.py, dwagent/governance.py
+
+Verification on real data
+-------------------------
+python scripts/verify.py t02    ->  verification/t02_structured_output.json
+  a. For each of the 8 studies with confirmed findings, draft the report in both modes; record
+     first-pass validity, attempts, and the error stages.
+  b. Negative control: the facts given to the model carry one deliberately wrong category. The
+     business rules must reject the draft (the schema alone would accept it).
+  c. Authorization matrix: the same valid report saved by a patient, an employee and a doctor;
+     a report read by its own patient, another patient, an employee and a doctor; a doctor
+     signing without approval.
+
+Known limits
+------------
+The "N mm" rule checks numbers followed by a millimetre unit; a wrong size written without a
+unit would pass it. Free-text descriptions are otherwise not checked for clinical wording.

@@ -1,0 +1,105 @@
+DEEPWISE AGENT TOOLS - REQUIREMENTS OVERVIEW
+=============================================
+
+Purpose
+-------
+Role-scoped AI agent tools for a chest CT service, built the way Deepwise deploys its imaging AI:
+an AI server inside the hospital network, fed by the CT scanner or PACS, used by doctors, with
+results reaching patients, and operated remotely by company engineers. Everything here runs on
+public data with a local model. It is a research demonstration, not a medical device.
+
+How to read these files
+-----------------------
+One file per job task. Each file states the job, the numbered requirements, the code that
+implements them, the real data it runs on, and the command that verifies it. Measured results
+are never typed into these files: they are written by scripts/verify.py into verification/*.json
+and summarised in verification/REPORT.md.
+
+Data (all public, all downloaded by scripts, none committed)
+------------------------------------------------------------
+LIDC-IDRI subset   10 chest CT studies (1,306 DICOM images, 0.69 GB) from The Cancer Imaging
+                   Archive, CC BY 3.0. Chosen from the annotation database so that every branch
+                   of the workflow occurs: 2 scans with no annotated nodule, and 2 scans in each
+                   size band (< 6, 6-8, 8-15, >= 15 mm). scripts/download_lidc.py
+LIDC annotations   The four-reader annotations of all 1,018 LIDC scans (6,859 annotations), from
+                   the SQLite file shipped in pylidc (MIT). Used as the reference standard and as
+                   the simulated radiologist review.
+PMC-Patients       20,400 published patient case summaries (CC BY-NC-SA 4.0, non-commercial),
+                   indexed by the earlier project github.com/xiangruiSun/deepwise_rag, which runs
+                   unchanged as a sidecar service and is called as a tool.
+Not used           INSPECT (Stanford). Data access was not complete, and its licence forbids
+                   sending the data to a non-HIPAA API.
+
+Model
+-----
+qwen3:14b served by Ollama on the local GPU. No patient-like data leaves the machine. The
+on-prem profile blocks any outbound call that is not to localhost (config.assert_egress_allowed).
+
+Job tasks and the agent skills each one covers
+----------------------------------------------
+Numbers in brackets refer to the concept list (C1-C21) and lab list (L1-L6) at the end.
+
+01 Tool-calling agent core            L1, C1, C2, C4, C9, C10, C12, C17
+02 Structured output and validation   L2, C11
+03 Agent runtime                      L3, C3, C16, C17
+04 Reasoning and planning             C5, C6, C7, C8
+05 Tools versus skills                L4, C13
+06 Memory and retrieval               C14
+07 Model Context Protocol             L5, C15
+08 Multi-agent workflow               L6, C18, C19, C20
+09 CT diagnosis pipeline              Deepwise focus: CT diagnosis system
+10 Training data governance           Deepwise focus: model training data
+11 Patient access                     Deepwise focus: patient access
+12 Doctor access                      Deepwise focus: doctor access
+13 Company employee access            Deepwise focus: operations by Deepwise staff
+14 Local deployment in the hospital   Deepwise focus: local CT machine and on-site AI server
+15 Web portal and production trade-offs   C21, and the public demonstration site
+
+Concept list (from the brief)
+C1  LLM application versus agent            C12 Function calling
+C2  Reason, act, observe, repeat            C13 Tools versus skills
+C3  Agent state management                  C14 Agent memory
+C4  ReAct                                   C15 Model Context Protocol
+C5  CoT, self-reflection, Tree of Thoughts  C16 Runtime architecture, checkpointing
+C6  Planning and task decomposition         C17 Runtime safety controls
+C7  Planner / executor                      C18 Multi-agent roles
+C8  Agent failure modes                     C19 Multi-agent orchestration patterns
+C9  Tool calling                            C20 Shared context / blackboard
+C10 Tool execution engineering              C21 Production trade-offs
+C11 Structured output
+
+Lab list (from the brief)
+L1 Build a tool-calling agent      L4 Tools versus skills
+L2 Structured output, validation   L5 MCP exploration
+L3 Build an agent runtime          L6 Multi-agent design
+
+Design rules that apply to every task
+-------------------------------------
+1. The model never produces a measurement, a category or a diagnosis. Measurements come from
+   image analysis, categories from deterministic code (dwagent/ct/lungrads.py), and the model
+   writes text that is then checked against both.
+2. Authorization is decided from the signed-in principal, never from the prompt or from tool
+   arguments. It is enforced in the tool executor on every call and again in the HTTP layer.
+3. Anything that writes is idempotent per run. Signing a report needs a human approval.
+4. Every model call, tool call, graph node and guard is traced with latency, tokens and errors.
+5. A failure is an observation the model can act on, not an exception that ends the run.
+6. Verification runs on real data with the real model. Unit tests with a scripted model pin the
+   failure-mode behaviour and the domain rules (tests/, 60 tests).
+
+Reference implementations studied for the portal and the access model
+---------------------------------------------------------------------
+Medplum (open-source FHIR platform)   access policies attached to a membership; a patient policy
+                                      parameterised by the patient's own id. Adopted: the patient
+                                      binding lives in the principal, not in request data.
+Open WebUI, LangGraph Agent Chat UI   tool calls shown as cards in the chat; approval shown as an
+                                      inline card with allow and deny; interrupt and resume.
+                                      Adopted: trace panel under every answer, sign-off card.
+shadcn AI Elements, AG-UI             a tool-call component that follows input, output, error and
+                                      waiting-for-approval states. Adopted: step list with status.
+Next.js + FastAPI RBAC starters       role and tenant scoping on every query, JWT scoped to the
+                                      active role. Adopted: role resolved server-side per request.
+Gleamer OS, Avicenna AVI, MONAI Deploy   an orchestration layer between modality, PACS and AI
+                                      engines over DICOM. Adopted: a DICOM C-STORE gateway in
+                                      front of the pipeline (task 14).
+The portal itself is deliberately a no-build single page (plain JavaScript served by FastAPI):
+an on-site install inside a hospital has no package registry to pull a front-end build from.

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "portal",
+      "runtimeExecutable": ".venv/Scripts/python.exe",
+      "runtimeArgs": ["-m", "uvicorn", "dwagent.web.app:app", "--host", "127.0.0.1", "--port", "8200"],
+      "port": 8200
+    }
+  ]
+}

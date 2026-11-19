@@ -1,0 +1,69 @@
+TASK 09 - CT DIAGNOSIS PIPELINE
+================================
+Deepwise focus: the CT diagnosis system. Uses the runtime of task 03 and the validation of task 02.
+
+Job
+---
+Take a chest CT series from the archive to a signed report: check the acquisition, run the
+detector, have the candidates reviewed, categorise the confirmed findings, draft, flag critical
+results, and stop for the radiologist.
+
+Requirements
+------------
+R1  Archive access (dwagent/ct/store.py). List studies; read DICOM headers; load a series as a
+    Hounsfield-unit volume sorted by slice position with spacing; cache volumes.
+R2  Acquisition gate. Analysis runs only when the series is CT, slice thickness <= 2.5 mm, no
+    gaps between slices, at least 60 slices. Contrast enhancement raises a warning that is
+    carried into the report limitations.
+R3  Detector interface. run_nodule_detector(patient_id) returns ranked candidates with location,
+    long and short axis, mean diameter, density and a score. The implementation here,
+    classical_v1.1 (dwagent/ct/detector.py), is a rule-based stand-in for a registered model:
+    lung segmentation by thresholding, compact dense objects inside the lungs, a second pass
+    that opens each slice to detach large masses from vessels, at most 12 candidates per scan.
+R4  Measurement (dwagent/ct/geometry.py). Long and short axis from the principal axes of the
+    region on its largest slice; mean diameter is their average to one decimal. The same code
+    measures detector masks and reader contours.
+R5  Review. Detector candidates are never reported directly. get_confirmed_findings returns the
+    reviewed list. In this demo the review is SIMULATED from the LIDC reader annotations: a
+    candidate matching an annotated nodule is confirmed, others are rejected, and annotated
+    nodules the detector missed are added. In a hospital this step is a person.
+R6  Categorisation (dwagent/ct/lungrads.py). Deterministic Lung-RADS v2022 for solid, part-solid
+    and non-solid nodules at baseline and follow-up, benign calcification, the 4X modifier, the
+    exam category and the management text. The language model never computes a category.
+R7  Draft. One schema-constrained model call writes the report text from the facts; the result
+    must pass the business rules of task 02; otherwise the deterministic template is used and
+    the report says so.
+R8  Normal studies. No confirmed findings: template report, exam category 1, no model call.
+R9  Critical results. Exam category 4B or 4X sets the critical flag shown at sign-off.
+R10 Sign-off. The run pauses; a radiologist approves or rejects; only a signed report is visible
+    to the patient; a newer signed report supersedes the older one.
+
+Simplifications, stated
+-----------------------
+Lung-RADS is a screening system and LIDC-IDRI is not a screening cohort: it is used here to
+exercise the rules, not to make screening claims. All studies are treated as baseline (LIDC has
+no priors). Airway nodules, atypical cysts and the step-down of stable category 3 and 4A nodules
+are not modelled. Zone is upper, mid or lower third of the lung extent, not the anatomical lobe.
+The solid component of a part-solid nodule is estimated from voxels above -300 HU.
+
+Code
+----
+dwagent/ct/store.py, detector.py, annotations.py, geometry.py, lungrads.py
+dwagent/clinical.py (review, reports), dwagent/pipelines/ct_study.py
+
+Verification on real data
+-------------------------
+python scripts/verify.py t09    ->  verification/t09_ct_diagnosis.json
+  a. Detector against the four-reader annotations on all 10 studies: nodules, detected, missed
+     (with size and type), false positives per scan, runtime.
+  b. Lung-RADS boundary table: 19 cases at every threshold, including follow-up and modifier
+     rules; all must match.
+python scripts/verify.py t03    all 10 studies end to end (see task 03)
+Reader contour orientation was checked on the data: mean HU at contour centres is -168 read as
+(column, row) and -406 the other way, so (column, row) is used.
+
+Known limits
+------------
+The detector is a baseline, not a product: it misses pure ground-glass nodules by design and has
+about ten false positives per scan. It exists so the agents meet a real algorithm with real
+latency and real errors.

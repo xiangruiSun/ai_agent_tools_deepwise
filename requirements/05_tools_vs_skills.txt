@@ -1,0 +1,56 @@
+TASK 05 - TOOLS VERSUS SKILLS
+==============================
+Covers: Lab 4; concept C13.
+
+Job
+---
+Expose the nodule workflow two ways and measure the difference: as atomic tools the model must
+sequence itself, and as one skill that encapsulates the business workflow.
+
+Requirements
+------------
+R1  Atomic tools (dwagent/tools/builtin.py), each one operation:
+      check_series_quality, get_confirmed_findings, lung_rads_category, search_guideline
+R2  Skill assess_nodules (dwagent/skills/nodule_assessment.py), exposed to the model as a single
+    tool. Inside, in code:
+      quality gate -> confirmed findings -> category for every finding -> exam category
+      -> management -> supporting guideline chunks
+    Business rules that live in the skill and not in the prompt:
+      - a series that fails the quality gate is never analysed
+      - every confirmed finding is categorised, none may be skipped
+      - spiculation is passed as a suspicious feature
+      - the exam category is the most suspicious finding's category
+      - category 4B and 4X are flagged as critical
+R3  Inner calls go through the tool executor (dwagent/skills/base.py SkillRunner), so each is
+    validated, authorized, retried and traced like a call the model made. An inner failure
+    surfaces with its error kind so retry policy still applies one level up.
+R4  The skill returns its own step list so the workflow is auditable.
+R5  A second skill, explain_report (dwagent/skills/patient_explain.py), encapsulates the patient
+    explanation workflow of task 11.
+
+Comparison to report
+--------------------
+    Dimension            Atomic tools                         Skill
+    Planning complexity  model chooses order and repeats      one decision
+                         per finding
+    Reliability          depends on the model sequencing      fixed in code
+                         and aggregating correctly
+    Context usage        every intermediate result enters     only the final result enters
+                         the conversation
+    Maintainability      rule changes mean prompt changes     rule changes are code changes
+                                                              with tests
+    Flexibility          can answer unanticipated questions   only does what it was built for
+Both are kept: the doctor agent is offered the skill and the atomic tools.
+
+Verification on real data
+-------------------------
+python scripts/verify.py t05    ->  verification/t05_tools_vs_skills.json
+  The same question for all 10 studies, once with only the four atomic tools and once with only
+  the skill. Per design: completed runs, exam category correct (the category the agent commits to
+  on its last line against the code-computed truth), all findings reported with their size,
+  whether the quality gate ran, model calls, tool calls made by the model, tokens, wall time,
+  tool errors, and the size of the tool schemas in the prompt.
+
+Known limits
+------------
+The comparison uses one model and ten studies; it shows direction, not a general law.

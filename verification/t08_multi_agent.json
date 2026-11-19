@@ -1,0 +1,561 @@
+{
+  "task": "t08_multi_agent",
+  "ran_at": "2026-11-18 22:41:00",
+  "model": "qwen3:14b",
+  "data": "LIDC-IDRI subset (10 chest CT studies, TCIA, CC BY 3.0); PMC-Patients subset (20,400 cases)",
+  "rubric": "6 deterministic checks, see dwagent/multi/team.py score_brief",
+  "single": {
+    "studies": [
+      {
+        "patient_id": "LIDC-IDRI-0212",
+        "status": "completed",
+        "score": 6,
+        "checks": {
+          "exam_category_correct": true,
+          "management_correct": true,
+          "all_findings_sized": true,
+          "guideline_cited_and_real": true,
+          "cases_cited_and_retrieved": true,
+          "no_unsupported_numbers": true
+        },
+        "tokens": 3170,
+        "llm_calls": 3,
+        "wall_s": 5.5,
+        "revisions": 0,
+        "blackboard_writes": 0,
+        "blackboard_conflicts": 0,
+        "failed": false,
+        "brief": "**Nodule Assessment Brief for Patient LIDC-IDRI-0212**  \nConfirmed finding: Left upper lobe solid nodule, mean diameter 5.5 mm, Lung-RADS category 1 [lung_rads_v2022#category-1-negative]. Exam category: Low suspicion for malignancy. Management: Continue annual screening with low-dose CT in 12 months.  \n\nSimilar published cases: [case_434870197d38b2e0fbd9] (thyroid nodule in a 39-year-old male) and [case_4d14f08293fb43f098e7] (breast nodule in a 61-year-old female)."
+      },
+      {
+        "patient_id": "LIDC-IDRI-0516",
+        "status": "completed",
+        "score": 6,
+        "checks": {
+          "exam_category_correct": true,
+          "management_correct": true,
+          "all_findings_sized": true,
+          "guideline_cited_and_real": true,
+          "cases_cited_and_retrieved": true,
+          "no_unsupported_numbers": true
+        },
+        "tokens": 3434,
+        "llm_calls": 3,
+        "wall_s": 5.5,
+        "revisions": 0,
+        "blackboard_writes": 0,
+        "blackboard_conflicts": 0,
+        "failed": false,
+        "brief": "Patient LIDC-IDRI-0516: Two confirmed findings\u2014left mid part-solid nodule (mean diameter 4.9 mm) [Lung-RADS category 2] and right mid ground-glass nodule (mean diameter 4.3 mm) [Lung-RADS category 2]. Exam Lung-RADS category: 2. Management: Continue annual screening with low-dose CT in 12 months [lung_rads_v2022#category-2-benign-appearance-or-behaviour]. Similar published cases: [case_ca73c88041fef91b79af] and [case_63b782d5b232290f10c0]."
+      },
+      {
+        "patient_id": "LIDC-IDRI-0126",
+        "status": "completed",
+        "score": 6,
+        "checks": {
+          "exam_category_correct": true,
+          "management_correct": true,
+          "all_findings_sized": true,
+          "guideline_cited_and_real": true,
+          "cases_cited_and_retrieved": true,
+          "no_unsupported_numbers": true
+        },
+        "tokens": 3465,
+        "llm_calls": 3,
+        "wall_s": 6.1,
+        "revisions": 0,
+        "blackboard_writes": 0,
+        "blackboard_conflicts": 0,
+        "failed": false,
+        "brief": "Patient LIDC-IDRI-0126 has two confirmed findings: a solid nodule in the left mid-zone (mean diameter 7.5 mm) [F1] and a solid nodule in the left upper zone (mean diameter 7.3 mm) [F2]. Both are categorized as Lung-RADS 3. Management recommendation: low-dose CT in 6 months [lung_rads_v2022#category-4x-additional-suspicious-features]. Similar published cases include case_0c9b1b1ba95533615c30 [case_0c9b1b1ba95533615c30] and case_4d14f08293fb43f098e7 [case_4d14f08293fb43f098e7]."
+      },
+      {
+        "patient_id": "LIDC-IDRI-0200",
+        "status": "completed",
+        "score": 6,
+        "checks": {
+          "exam_category_correct": true,
+          "management_correct": true,
+          "all_findings_sized": true,
+          "guideline_cited_and_real": true,
+          "cases_cited_and_retrieved": true,
+          "no_unsupported_numbers": true
+        },
+        "tokens": 3407,
+        "llm_calls": 3,
+        "wall_s": 4.9,
+        "revisions": 0,
+        "blackboard_writes": 0,
+        "blackboard_conflicts": 0,
+        "failed": false,
+        "brief": "Patient LIDC-IDRI-0200: Two confirmed solid nodules, both in the right lung\u2014lower zone (7.8 mm) and mid zone (7.1 mm). Lung-RADS category 3 for the exam [lung_rads_v2022#category-4x-additional-suspicious-features]. Management: Low-dose CT in 6 months. Similar published cases: [case_4d14f08293fb43f098e7] and [case_0c9b1b1ba95533615c30]."
+      },
+      {
+        "patient_id": "LIDC-IDRI-0005",
+        "status": "completed",
+        "score": 5,
+        "checks": {
+          "exam_category_correct": false,
+          "management_correct": true,
+          "all_findings_sized": true,
+          "guideline_cited_and_real": true,
+          "cases_cited_and_retrieved": true,
+          "no_unsupported_numbers": true
+        },
+        "tokens": 3768,
+        "llm_calls": 3,
+        "wall_s": 6.0,
+        "revisions": 0,
+        "blackboard_writes": 0,
+        "blackboard_conflicts": 0,
+        "failed": false,
+        "brief": "Patient LIDC-IDRI-0005 has three confirmed findings: a left mid-zone solid nodule (8.1 mm), a left mid-zone solid nodule (6.4 mm), and a right mid-zone solid nodule (6.3 mm). The exam Lung-RADS category is 4A [lung_rads_v2022#category-4a-suspicious]. Management includes low-dose CT in 3 months; PET/CT may be considered for nodules \u22658 mm. Similar published cases include case_3122c1f447eb354a9fbf [case_3122c1f447eb354a9fbf] and case_9f8b8b80c247a9adb4a2 [case_9f8b8b80c247a9adb4a2]."
+      },
+      {
+        "patient_id": "LIDC-IDRI-0008",
+        "status": "completed",
+        "score": 5,
+        "checks": {
+          "exam_category_correct": false,
+          "management_correct": true,
+          "all_findings_sized": true,
+          "guideline_cited_and_real": true,
+          "cases_cited_and_retrieved": true,
+          "no_unsupported_numbers": true
+        },
+        "tokens": 3596,
+        "llm_calls": 3,
+        "wall_s": 6.1,
+        "revisions": 0,
+        "blackboard_writes": 0,
+        "blackboard_conflicts": 0,
+        "failed": false,
+        "brief": "Patient LIDC-IDRI-0008 has two confirmed findings: a right mid-zone part-solid nodule (mean diameter 8.6 mm) [F1] and a left mid-zone solid nodule (mean diameter 8.3 mm) [F2]. The exam Lung-RADS category is 4A [lung_rads_v2022#category-4a-suspicious]. Management includes low-dose CT in 3 months; PET/CT may be considered for nodules \u2265 8 mm. Similar published cases include case_3122c1f447eb354a9fbf [case_3122c1f447eb354a9fbf] and case_4ec02bc90082efbff39e [case_4ec02bc90082efbff39e]."
+      },
+      {
+        "patient_id": "LIDC-IDRI-0001",
+        "status": "completed",
+        "score": 5,
+        "checks": {
+          "exam_category_correct": false,
+          "management_correct": true,
+          "all_findings_sized": true,
+          "guideline_cited_and_real": true,
+          "cases_cited_and_retrieved": true,
+          "no_unsupported_numbers": true
+        },
+        "tokens": 3313,
+        "llm_calls": 3,
+        "wall_s": 5.9,
+        "revisions": 0,
+        "blackboard_writes": 0,
+        "blackboard_conflicts": 0,
+        "failed": false,
+        "brief": "Patient LIDC-IDRI-0001 has a confirmed finding: a solid nodule in the left mid zone with a mean diameter of 27.8 mm [F1]. The exam Lung-RADS category is 4X [lung_rads_v2022#category-4x-additional-suspicious-features]. Management includes diagnostic chest CT with or without contrast, and PET/CT may be considered for nodules \u22658 mm; tissue sampling or referral for further evaluation is recommended. Similar published cases include case_434870197d38b2e0fbd9 [case_434870197d38b2e0fbd9] and case_4d14f08293fb43f098e7 [case_4d14f08293fb43f098e7]."
+      },
+      {
+        "patient_id": "LIDC-IDRI-0003",
+        "status": "completed",
+        "score": 5,
+        "checks": {
+          "exam_category_correct": false,
+          "management_correct": true,
+          "all_findings_sized": true,
+          "guideline_cited_and_real": true,
+          "cases_cited_and_retrieved": true,
+          "no_unsupported_numbers": true
+        },
+        "tokens": 4091,
+        "llm_calls": 3,
+        "wall_s": 6.9,
+        "revisions": 0,
+        "blackboard_writes": 0,
+        "blackboard_conflicts": 0,
+        "failed": false,
+        "brief": "Patient LIDC-IDRI-0003 has four confirmed findings: a 28.5 mm ground-glass nodule on the left mid-zone [F1], and three solid nodules (26.2 mm, 15.1 mm, and 12.2 mm) on the left and right mid-zones [F2, F3, F4]. The exam Lung-RADS category is 4B [lung_rads_v2022#category-4b-very-suspicious]. Management includes diagnostic chest CT with or without contrast, and PET/CT for nodules \u22658 mm. Similar cases include [case_b3e4544c99e0e5c0550b] and [case_e984889da18f4e4694dd]."
+      }
+    ],
+    "summary": {
+      "n": 8,
+      "mean_score_of_6": 5.5,
+      "perfect": 4,
+      "failure_rate": 0.0,
+      "mean_tokens": 3530,
+      "mean_llm_calls": 3.0,
+      "mean_wall_s": 5.9,
+      "check_pass_counts": {
+        "exam_category_correct": 4,
+        "management_correct": 8,
+        "all_findings_sized": 8,
+        "guideline_cited_and_real": 8,
+        "cases_cited_and_retrieved": 8,
+        "no_unsupported_numbers": 8
+      }
+    }
+  },
+  "sequential": {
+    "studies": [
+      {
+        "patient_id": "LIDC-IDRI-0212",
+        "status": "approved",
+        "score": 6,
+        "checks": {
+          "exam_category_correct": true,
+          "management_correct": true,
+          "all_findings_sized": true,
+          "guideline_cited_and_real": true,
+          "cases_cited_and_retrieved": true,
+          "no_unsupported_numbers": true
+        },
+        "tokens": 10269,
+        "llm_calls": 12,
+        "wall_s": 20.3,
+        "revisions": 1,
+        "blackboard_writes": 12,
+        "blackboard_conflicts": 0,
+        "failed": false,
+        "brief": "Patient LIDC-IDRI-0212 has a confirmed nodule on the left upper zone, solid type, with a mean diameter of 5.5 mm. The exam Lung-RADS category is Lung-RADS 1 [lung_rads_v2022#category-1-negative]. Management recommendation: Continue annual screening with low-dose CT in 12 months [lung_rads_v2022#exam-category]. Similar cases: [case_340501de166552e4037e], [case_170eff5c7b1101ee1ae7]."
+      },
+      {
+        "patient_id": "LIDC-IDRI-0516",
+        "status": "approved",
+        "score": 6,
+        "checks": {
+          "exam_category_correct": true,
+          "management_correct": true,
+          "all_findings_sized": true,
+          "guideline_cited_and_real": true,
+          "cases_cited_and_retrieved": true,
+          "no_unsupported_numbers": true
+        },
+        "tokens": 9682,
+        "llm_calls": 11,
+        "wall_s": 20.1,
+        "revisions": 0,
+        "blackboard_writes": 10,
+        "blackboard_conflicts": 0,
+        "failed": false,
+        "brief": "Patient LIDC-IDRI-0516 has two confirmed nodules: left mid-zone part-solid (mean diameter 4.9 mm) [F1] and right mid-zone ground-glass (mean diameter 4.3 mm) [F2]. Both are categorized as Lung-RADS 2 [lung_rads_v2022#category-2-benign-appearance-or-behaviour]. Exam Lung-RADS category is 2. Management: Continue annual screening with low-dose CT in 12 months. Similar cases: [case_340501de166552e4037e], [case_170eff5c7b1101ee1ae7]."
+      },
+      {
+        "patient_id": "LIDC-IDRI-0126",
+        "status": "not_approved",
+        "score": 5,
+        "checks": {
+          "exam_category_correct": false,
+          "management_correct": true,
+          "all_findings_sized": true,
+          "guideline_cited_and_real": true,
+          "cases_cited_and_retrieved": true,
+          "no_unsupported_numbers": true
+        },
+        "tokens": 11447,
+        "llm_calls": 12,
+        "wall_s": 22.9,
+        "revisions": 1,
+        "blackboard_writes": 12,
+        "blackboard_conflicts": 0,
+        "failed": false,
+        "brief": "Patient LIDC-IDRI-0126 has two confirmed solid nodules: F1 (left, mid zone, 7.5 mm) and F2 (left, upper zone, 7.3 mm). The exam Lung-RADS category is 3 [lung_rads_v2022#category-1-negative]. Management recommendation: Low-dose CT in 6 months. Similar cases: [case_340501de166552e4037e], [case_170eff5c7b1101ee1ae7]."
+      },
+      {
+        "patient_id": "LIDC-IDRI-0200",
+        "status": "not_approved",
+        "score": 6,
+        "checks": {
+          "exam_category_correct": true,
+          "management_correct": true,
+          "all_findings_sized": true,
+          "guideline_cited_and_real": true,
+          "cases_cited_and_retrieved": true,
+          "no_unsupported_numbers": true
+        },
+        "tokens": 12084,
+        "llm_calls": 13,
+        "wall_s": 23.3,
+        "revisions": 1,
+        "blackboard_writes": 12,
+        "blackboard_conflicts": 0,
+        "failed": false,
+        "brief": "Patient LIDC-IDRI-0200 has two confirmed solid nodules: F1 (right, lower zone, 7.8 mm) and F2 (right, mid zone, 7.1 mm). Both are categorized as Lung-RADS 3. Exam Lung-RADS category is 3. Management recommendation: Low-dose CT in 6 months [lung_rads_v2022#category-1-negative]. Similar cases: [case_340501de166552e4037e], [case_170eff5c7b1101ee1ae7]."
+      },
+      {
+        "patient_id": "LIDC-IDRI-0005",
+        "status": "approved",
+        "score": 6,
+        "checks": {
+          "exam_category_correct": true,
+          "management_correct": true,
+          "all_findings_sized": true,
+          "guideline_cited_and_real": true,
+          "cases_cited_and_retrieved": true,
+          "no_unsupported_numbers": true
+        },
+        "tokens": 12466,
+        "llm_calls": 12,
+        "wall_s": 23.2,
+        "revisions": 1,
+        "blackboard_writes": 12,
+        "blackboard_conflicts": 0,
+        "failed": false,
+        "brief": "Patient LIDC-IDRI-0005 has three confirmed solid nodules: F1 (left, mid zone, 8.1 mm), F2 (left, mid zone, 6.4 mm), and F3 (right, mid zone, 6.3 mm). The exam Lung-RADS category is **Lung-RADS 4A** [lung_rads_v2022#category-4a-suspicious]. Management recommendation: Low-dose CT in 3 months; PET/CT may be considered for nodules \u22658 mm. Similar cases: [case_07e80a763e30c9dc0732], [case_3ca8d9193a085b3982e7]."
+      },
+      {
+        "patient_id": "LIDC-IDRI-0008",
+        "status": "not_approved",
+        "score": 6,
+        "checks": {
+          "exam_category_correct": true,
+          "management_correct": true,
+          "all_findings_sized": true,
+          "guideline_cited_and_real": true,
+          "cases_cited_and_retrieved": true,
+          "no_unsupported_numbers": true
+        },
+        "tokens": 11771,
+        "llm_calls": 12,
+        "wall_s": 23.3,
+        "revisions": 1,
+        "blackboard_writes": 12,
+        "blackboard_conflicts": 0,
+        "failed": false,
+        "brief": "Patient LIDC-IDRI-0008 has two confirmed findings: F1 (right, mid zone, part-solid, 8.6 mm) and F2 (left, mid zone, solid, 8.3 mm). Exam Lung-RADS category is **Lung-RADS 4A** [lung_rads_v2022#category-4a-suspicious]. Management: low-dose CT in 3 months; PET/CT may be considered for solid nodules \u2265 8 mm. Similar cases: [case_e128162b7619a4236e5d], [case_340501de166552e4037e]."
+      },
+      {
+        "patient_id": "LIDC-IDRI-0001",
+        "status": "approved",
+        "score": 6,
+        "checks": {
+          "exam_category_correct": true,
+          "management_correct": true,
+          "all_findings_sized": true,
+          "guideline_cited_and_real": true,
+          "cases_cited_and_retrieved": true,
+          "no_unsupported_numbers": true
+        },
+        "tokens": 10942,
+        "llm_calls": 12,
+        "wall_s": 21.2,
+        "revisions": 1,
+        "blackboard_writes": 12,
+        "blackboard_conflicts": 0,
+        "failed": false,
+        "brief": "Patient LIDC-IDRI-0001 has a confirmed left mid-zone solid nodule (mean diameter 27.8 mm) [F1]. Exam Lung-RADS category is **Lung-RADS 4X**, based on a solid nodule \u226515 mm with additional suspicious features [lung_rads_v2022#category-4x-additional-suspicious-features]. Management includes diagnostic chest CT with or without contrast; PET/CT may be considered for solid nodules \u22658 mm; tissue sampling or referral for further evaluation. Similar cases: [case_b8609639f2a06947aa13], [case_1d8672b7441603c256af]."
+      },
+      {
+        "patient_id": "LIDC-IDRI-0003",
+        "status": "approved",
+        "score": 6,
+        "checks": {
+          "exam_category_correct": true,
+          "management_correct": true,
+          "all_findings_sized": true,
+          "guideline_cited_and_real": true,
+          "cases_cited_and_retrieved": true,
+          "no_unsupported_numbers": true
+        },
+        "tokens": 13713,
+        "llm_calls": 12,
+        "wall_s": 26.0,
+        "revisions": 1,
+        "blackboard_writes": 12,
+        "blackboard_conflicts": 0,
+        "failed": false,
+        "brief": "Confirmed findings for patient LIDC-IDRI-0003:  \n- **F1**: Left, mid zone, ground_glass, 28.5 mm  \n- **F2**: Left, mid zone, solid, 26.2 mm  \n- **F3**: Right, mid zone, solid, 15.1 mm  \n- **F4**: Left, mid zone, solid, 12.2 mm  \n\nExam category: **Lung-RADS 4B** [lung_rads_v2022#category-4b-very-suspicious].  \n\nManagement: Diagnostic chest CT with or without contrast; PET/CT may be considered for solid nodules \u22658 mm; tissue sampling or referral for further evaluation.  \n\nSimilar cases: [case_340501de166552e4037e], [case_170eff5c7b1101ee1ae7]."
+      }
+    ],
+    "summary": {
+      "n": 8,
+      "mean_score_of_6": 5.88,
+      "perfect": 7,
+      "failure_rate": 0.0,
+      "mean_tokens": 11547,
+      "mean_llm_calls": 12.0,
+      "mean_wall_s": 22.5,
+      "check_pass_counts": {
+        "exam_category_correct": 7,
+        "management_correct": 8,
+        "all_findings_sized": 8,
+        "guideline_cited_and_real": 8,
+        "cases_cited_and_retrieved": 8,
+        "no_unsupported_numbers": 8
+      }
+    }
+  },
+  "hierarchical": {
+    "studies": [
+      {
+        "patient_id": "LIDC-IDRI-0212",
+        "status": "not_approved",
+        "score": 6,
+        "checks": {
+          "exam_category_correct": true,
+          "management_correct": true,
+          "all_findings_sized": true,
+          "guideline_cited_and_real": true,
+          "cases_cited_and_retrieved": true,
+          "no_unsupported_numbers": true
+        },
+        "tokens": 25514,
+        "llm_calls": 22,
+        "wall_s": 33.0,
+        "revisions": 2,
+        "blackboard_writes": 15,
+        "blackboard_conflicts": 0,
+        "failed": false,
+        "brief": "Patient LIDC-IDRI-0212 has a confirmed finding: left upper zone solid nodule with a mean diameter of 5.5 mm [F1]. Exam category: Lung-RADS 1, indicating a benign calcification pattern. Management recommendation: Continue annual screening with low-dose CT in 12 months [lung_rads_v2022#category-1-negative]. Similar cases: [case_340501de166552e4037e], [case_170eff5c7b1101ee1ae7]."
+      },
+      {
+        "patient_id": "LIDC-IDRI-0516",
+        "status": "approved",
+        "score": 6,
+        "checks": {
+          "exam_category_correct": true,
+          "management_correct": true,
+          "all_findings_sized": true,
+          "guideline_cited_and_real": true,
+          "cases_cited_and_retrieved": true,
+          "no_unsupported_numbers": true
+        },
+        "tokens": 16141,
+        "llm_calls": 16,
+        "wall_s": 25.5,
+        "revisions": 0,
+        "blackboard_writes": 12,
+        "blackboard_conflicts": 0,
+        "failed": false,
+        "brief": "Patient LIDC-IDRI-0516 has two confirmed findings: left mid-zone part-solid nodule (mean diameter 4.9 mm) [F1] and right mid-zone ground-glass nodule (mean diameter 4.3 mm) [F2]. Both are categorized as Lung-RADS 2 [lung_rads_v2022#category-2-benign-appearance-or-behaviour]. Management: Continue annual low-dose CT screening in 12 months. Similar cases: [case_340501de166552e4037e], [case_170eff5c7b1101ee1ae7]."
+      },
+      {
+        "patient_id": "LIDC-IDRI-0126",
+        "status": "not_approved",
+        "score": 6,
+        "checks": {
+          "exam_category_correct": true,
+          "management_correct": true,
+          "all_findings_sized": true,
+          "guideline_cited_and_real": true,
+          "cases_cited_and_retrieved": true,
+          "no_unsupported_numbers": true
+        },
+        "tokens": 28045,
+        "llm_calls": 23,
+        "wall_s": 34.9,
+        "revisions": 2,
+        "blackboard_writes": 15,
+        "blackboard_conflicts": 0,
+        "failed": false,
+        "brief": "Patient LIDC-IDRI-0126 has two confirmed findings: F1 (left, mid zone, solid, 7.5 mm) and F2 (left, upper zone, solid, 7.3 mm). Both are categorized as Lung-RADS 3 [lung_rads_v2022#category-4x-additional-suspicious-features]. The exam Lung-RADS category is 3. Management recommendation: low-dose CT in 6 months. Similar cases: [case_340501de166552e4037e], [case_170eff5c7b1101ee1ae7]."
+      }
+    ],
+    "summary": {
+      "n": 3,
+      "mean_score_of_6": 6.0,
+      "perfect": 3,
+      "failure_rate": 0.0,
+      "mean_tokens": 23233,
+      "mean_llm_calls": 20.3,
+      "mean_wall_s": 31.1,
+      "check_pass_counts": {
+        "exam_category_correct": 3,
+        "management_correct": 3,
+        "all_findings_sized": 3,
+        "guideline_cited_and_real": 3,
+        "cases_cited_and_retrieved": 3,
+        "no_unsupported_numbers": 3
+      }
+    }
+  },
+  "network": {
+    "studies": [
+      {
+        "patient_id": "LIDC-IDRI-0212",
+        "status": "approved",
+        "score": 6,
+        "checks": {
+          "exam_category_correct": true,
+          "management_correct": true,
+          "all_findings_sized": true,
+          "guideline_cited_and_real": true,
+          "cases_cited_and_retrieved": true,
+          "no_unsupported_numbers": true
+        },
+        "tokens": 10264,
+        "llm_calls": 12,
+        "wall_s": 18.5,
+        "revisions": 1,
+        "blackboard_writes": 12,
+        "blackboard_conflicts": 0,
+        "failed": false,
+        "brief": "Patient LIDC-IDRI-0212 has a confirmed nodule on the left upper zone, solid type, with a mean diameter of 5.5 mm. The exam Lung-RADS category is Lung-RADS 1 [lung_rads_v2022#category-1-negative]. Management recommendation: Continue annual screening with low-dose CT in 12 months [lung_rads_v2022#exam-category]. Similar cases: [case_340501de166552e4037e], [case_170eff5c7b1101ee1ae7]."
+      },
+      {
+        "patient_id": "LIDC-IDRI-0516",
+        "status": "approved",
+        "score": 6,
+        "checks": {
+          "exam_category_correct": true,
+          "management_correct": true,
+          "all_findings_sized": true,
+          "guideline_cited_and_real": true,
+          "cases_cited_and_retrieved": true,
+          "no_unsupported_numbers": true
+        },
+        "tokens": 9680,
+        "llm_calls": 11,
+        "wall_s": 17.4,
+        "revisions": 0,
+        "blackboard_writes": 10,
+        "blackboard_conflicts": 0,
+        "failed": false,
+        "brief": "Patient LIDC-IDRI-0516 has two confirmed nodules: left mid-zone part-solid (mean diameter 4.9 mm) [F1] and right mid-zone ground-glass (mean diameter 4.3 mm) [F2]. Both are categorized as Lung-RADS 2 [lung_rads_v2022#category-2-benign-appearance-or-behaviour]. Exam Lung-RADS category is 2. Management recommendation: Continue annual screening with low-dose CT in 12 months. Similar cases: [case_340501de166552e4037e], [case_170eff5c7b1101ee1ae7]."
+      },
+      {
+        "patient_id": "LIDC-IDRI-0126",
+        "status": "not_approved",
+        "score": 6,
+        "checks": {
+          "exam_category_correct": true,
+          "management_correct": true,
+          "all_findings_sized": true,
+          "guideline_cited_and_real": true,
+          "cases_cited_and_retrieved": true,
+          "no_unsupported_numbers": true
+        },
+        "tokens": 12244,
+        "llm_calls": 13,
+        "wall_s": 21.9,
+        "revisions": 1,
+        "blackboard_writes": 12,
+        "blackboard_conflicts": 0,
+        "failed": false,
+        "brief": "Patient LIDC-IDRI-0126 has two confirmed solid nodules: F1 (left, mid zone, 7.5 mm) and F2 (left, upper zone, 7.3 mm). Both are categorized as Lung-RADS 3 [lung_rads_v2022#category-1-negative]. Exam Lung-RADS category is 3. Management recommendation: Low-dose CT in 6 months. Similar cases: [case_340501de166552e4037e], [case_170eff5c7b1101ee1ae7]."
+      }
+    ],
+    "summary": {
+      "n": 3,
+      "mean_score_of_6": 6.0,
+      "perfect": 3,
+      "failure_rate": 0.0,
+      "mean_tokens": 10729,
+      "mean_llm_calls": 12.0,
+      "mean_wall_s": 19.3,
+      "check_pass_counts": {
+        "exam_category_correct": 3,
+        "management_correct": 3,
+        "all_findings_sized": 3,
+        "guideline_cited_and_real": 3,
+        "cases_cited_and_retrieved": 3,
+        "no_unsupported_numbers": 3
+      }
+    }
+  },
+  "blackboard_concurrency": {
+    "writers": 8,
+    "appends_each": 50,
+    "items_stored": 400,
+    "final_version": 400,
+    "conflicts_detected_and_retried": 0,
+    "lost_updates": 0
+  }
+}

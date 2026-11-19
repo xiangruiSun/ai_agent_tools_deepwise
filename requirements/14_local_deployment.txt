@@ -1,0 +1,63 @@
+TASK 14 - LOCAL DEPLOYMENT IN THE HOSPITAL
+===========================================
+Deepwise focus: the local CT machine and the AI server installed on the hospital network.
+(Deepwise's own description: the AI server sits inside the hospital, the imaging device or PACS
+forwards images to it over the hospital LAN, and results are read on PACS terminals.)
+
+Job
+---
+Make the agent stack run entirely on site: images arrive from the scanner over DICOM, the model
+runs on the local GPU, nothing leaves the network, and a failed or partial transfer cannot
+produce a report.
+
+Requirements
+------------
+R1  DICOM gateway (dwagent/gateway/scp.py). A Storage SCP (C-STORE) built on pynetdicom with AE
+    title DEEPWISE_AI. Accepts CT Image Storage and Verification. Received images are written
+    under data/runtime/incoming/<PatientID>/<SeriesInstanceUID>/. When the sender releases the
+    association one arrival record is written (patient, series, file count, calling AE) and the
+    transfer is audited.
+R2  Sender allowlist. Associations from a calling AE title that is not configured (CT_SCANNER_1,
+    HOSPITAL_PACS) are aborted before any image is accepted.
+R3  Non-CT objects are refused with a DICOM failure status.
+R4  A received series can be registered as a study (ct_store.register_study) and run through the
+    pipeline. An incomplete series must be stopped by the quality gate: no detector, no report.
+R5  Local model. The default provider is Ollama on 127.0.0.1 with qwen3:14b; no API key exists
+    in the on-prem profile.
+R6  Egress guard (config.assert_egress_allowed). In the on-prem profile every outbound call must
+    target this host or a name listed in DWAGENT_ALLOWED_HOSTS. The model client and the
+    retrieval tool check before sending; a blocked call fails before any byte leaves.
+R7  All agent-side services are local: model server, retrieval sidecar, MCP server (stdio),
+    SQLite state. The portal is a no-build static page served by the same process.
+R8  Node health tool for remote support without data access (task 13).
+R9  Resource sharing. The detector runs on CPU (3-6 s per study here); the model uses the GPU.
+    Per-study pipeline time and tokens are recorded so a site can be sized.
+R10 Recovery. State is in SQLite with a checkpoint per node; after a power cut or restart, runs
+    resume from their last checkpoint and pending sign-offs are still pending (task 03).
+
+Run it
+------
+python -m dwagent.gateway.scp --port 11112          the gateway
+python scripts/send_study.py LIDC-IDRI-0005         acts as the scanner (Storage SCU)
+bash scripts/start_rag.sh                           retrieval sidecar on port 8100
+python -m uvicorn dwagent.web.app:app --port 8200   portal and API
+
+Verification on real data
+-------------------------
+python scripts/verify.py t14    ->  verification/t14_local_deployment.json
+  a. A full real series (133 images) is sent by C-STORE from an allowed AE: images accepted,
+     files on disk, pixel data of the first 10 compared byte for byte with the source, transfer
+     time.
+  b. The first 40 images of another real series are sent from the second allowed AE, registered
+     as an incoming study and run through the pipeline: it must end rejected_quality with the
+     detector never run.
+  c. The same images from an unknown AE: the association must be rejected, nothing stored.
+  d. Egress guard: localhost allowed, an external host blocked, and the model client pointed at
+     an external host must fail before sending.
+  e. Node health snapshot.
+
+Known limits
+------------
+No TLS on the DICOM association and no DICOM query/retrieve or result push back to PACS (DICOM
+SR / GSPS); results stay in this system. One process, no service supervisor or installer. GPU
+scheduling between several models is not addressed.

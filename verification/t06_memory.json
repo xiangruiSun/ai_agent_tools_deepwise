@@ -1,0 +1,35 @@
+{
+  "task": "t06_memory",
+  "ran_at": "2026-11-18 22:12:30",
+  "model": "qwen3:14b",
+  "data": "LIDC-IDRI subset (10 chest CT studies, TCIA, CC BY 3.0); PMC-Patients subset (20,400 cases)",
+  "long_term": {
+    "remember_tool_called": true,
+    "stored": [
+      "The user wants Lung-RADS categories written as 'LR-4A' style and answers in at most two sentences."
+    ],
+    "new_session_recalled": [
+      "The user wants Lung-RADS categories written as 'LR-4A' style and answers in at most two sentences."
+    ],
+    "new_session_answer": "The exam category for patient LIDC-IDRI-0005 is LR-4A [lung_rads_v2022#category-4a-suspicious]. Management includes low-dose CT in 3 months and consideration of PET/CT for nodules 8 mm or larger [lung_rads_v2022#category-4x-additional-suspicious-features].",
+    "style_applied": true,
+    "other_user_recalled": [],
+    "other_user_isolated": true,
+    "other_user_answer": "The exam category for patient LIDC-IDRI-0005 is **4A** (suspicious), based on the findings of solid nodules with diameters between 6 mm and 15 mm [lung_rads_v2022#category-4a-suspicious]. The manageme"
+  },
+  "short_term": {
+    "follow_up_answer": "The follow-up for LR-4A includes low-dose CT in 3 months and consideration of PET/CT for nodules 8 mm or larger [lung_rads_v2022#category-4a-suspicious].",
+    "follow_up_resolved_from_history": true
+  },
+  "working_context": {
+    "history_messages": 26,
+    "history_tokens_estimate": 2703,
+    "budget_tokens": 2500,
+    "sent_tokens_estimate": 2130,
+    "status": "completed",
+    "iterations": 9,
+    "tool_calls": 15,
+    "answer": "All studies have been checked, and all passed the series quality check. The total number of studies that passed is 10.",
+    "true_passed": 10
+  }
+}

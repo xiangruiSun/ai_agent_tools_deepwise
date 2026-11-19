@@ -1,0 +1,119 @@
+{
+  "doctor_tools": [
+    "list_ct_studies",
+    "get_series_metadata",
+    "check_series_quality",
+    "run_nodule_detector",
+    "get_confirmed_findings",
+    "lung_rads_category",
+    "search_guideline",
+    "search_similar_cases",
+    "get_report",
+    "calculator",
+    "assess_nodules"
+  ],
+  "questions": [
+    {
+      "question": "Assess patient LIDC-IDRI-0001 and tell me if this is a critical result.",
+      "status": "completed",
+      "tools": [
+        [
+          "assess_nodules",
+          true
+        ]
+      ],
+      "expected_any": [
+        "4x"
+      ],
+      "contains_expected": true,
+      "tokens": 3346,
+      "wall_s": 9.3,
+      "answer": "The assessment for patient LIDC-IDRI-0001 indicates a critical result. A solid nodule with a mean diameter of 27.8 mm was identified in the left mid zone, classified as Lung-RADS category 4X due to additional suspicious features. This finding warrants diagnostic chest CT with or without contrast, and PET/CT may be considered. Tissue sampling or referral for further clinical evaluation is recommended [lung_rads_v2022#category-4x-additional-suspicious-features]."
+    },
+    {
+      "question": "Does patient LIDC-IDRI-0028 have any confirmed nodules? What category is the exam?",
+      "status": "completed",
+      "tools": [
+        [
+          "get_confirmed_findings",
+          true
+        ],
+        [
+          "assess_nodules",
+          true
+        ]
+      ],
+      "expected_any": [
+        "category 1",
+        "lung-rads 1"
+      ],
+      "contains_expected": true,
+      "tokens": 3291,
+      "wall_s": 9.8,
+      "answer": "The patient LIDC-IDRI-0028 has no confirmed nodules. The exam category is Lung-RADS 1 (negative), and the management recommendation is to continue annual screening with low-dose CT in 12 months [lung_rads_v2022#category-1-negative, lung_rads_v2022#exam-category]."
+    },
+    {
+      "question": "For patient LIDC-IDRI-0003, which finding drives the exam category and why?",
+      "status": "completed",
+      "tools": [
+        [
+          "assess_nodules",
+          true
+        ]
+      ],
+      "expected_any": [
+        "4b",
+        "4x"
+      ],
+      "contains_expected": true,
+      "tokens": 3680,
+      "wall_s": 8.6,
+      "answer": "The finding that drives the exam category is **F2**, a solid nodule with a mean diameter of 26.2 mm. This finding is categorized as **Lung-RADS 4B** (very suspicious for malignancy) due to its size and type [lung_rads_v2022#category-4b-very-suspicious]. The exam category is also **4B** because this is the most significant finding in the assessment."
+    },
+    {
+      "question": "What does the guideline say about a new 5 mm solid nodule at follow-up? Give the category and cite it.",
+      "status": "completed",
+      "tools": [
+        [
+          "search_guideline",
+          true
+        ]
+      ],
+      "expected_any": [
+        "category 3",
+        "lung-rads 3"
+      ],
+      "contains_expected": false,
+      "tokens": 3120,
+      "wall_s": 1.8,
+      "answer": "The guideline states that for a new 5 mm solid nodule at follow-up, no routine follow-up is required since it is smaller than 6 mm [fleischner_2017#single-part-solid-nodule]."
+    },
+    {
+      "question": "Find two similar published cases for the dominant nodule of patient LIDC-IDRI-0126 and summarise them.",
+      "status": "completed",
+      "tools": [
+        [
+          "get_confirmed_findings",
+          true
+        ],
+        [
+          "search_similar_cases",
+          true
+        ]
+      ],
+      "expected_any": [
+        "case_"
+      ],
+      "contains_expected": true,
+      "tokens": 5712,
+      "wall_s": 11.4,
+      "answer": "Here are two similar published cases based on the description of the dominant nodule in patient LIDC-IDRI-0126:\n\n1. **Case ID**: case_3122c1f447eb354a9fbf  \n   **Description**: A 45-year-old female with a history of rheumatoid arthritis (RA) and on methotrexate and acemetacin. She presented with respiratory symptoms and had a rough breathing sound in the right lung. This case is associated with a medical history of autoimmune disease and possible lung involvement.\n\n2. **Case ID**: case_7da4f359d9f922e73f32  \n   **Description**: A 54-year-old female with a multinodular goiter and a thyroid nodule of 20 mm in diameter. The nodule was heterogeneous and hypervascular, located in the upper pole o"
+    }
+  ],
+  "correct": 4,
+  "of": 5,
+  "task": "t12_doctor_access",
+  "ran_at": "2026-11-18 22:50:04",
+  "model": "qwen3:14b",
+  "data": "LIDC-IDRI subset (10 chest CT studies, TCIA, CC BY 3.0); PMC-Patients subset (20,400 cases)"
+}

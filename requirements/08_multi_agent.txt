@@ -1,0 +1,49 @@
+TASK 08 - MULTI-AGENT WORKFLOW
+===============================
+Covers: Lab 6 (optional advanced); concepts C18, C19, C20.
+
+Job
+---
+Prepare a "nodule assessment brief" for a study: findings with sizes, exam category, management,
+a guideline citation, and one or two similar published cases. Do it with a team of agents and
+with a single agent, and measure whether the team is worth its cost.
+
+Requirements
+------------
+R1  Roles (dwagent/multi/team.py):
+      Planner     splits the request into 2-4 research questions (structured output)
+      Researcher  a tool-calling agent that answers one question and records its tool evidence
+      Writer      composes the brief from the blackboard only; has no tools
+      Critic      deterministic checks first (the scoring rubric), then a structured model
+                  review; can send the brief back once
+R2  Orchestration patterns, all on the same roles:
+      sequential    planner -> researchers one after another -> writer -> critic -> one revision
+      hierarchical  a supervisor agent delegates through three tools (delegate_research,
+                    delegate_write, delegate_review) and decides the order itself
+      network       researchers run concurrently on the shared blackboard, then writer and critic
+R3  Shared context (dwagent/multi/blackboard.py). Agents exchange nothing directly; they read and
+    write named, versioned entries. Writes carry the version last seen; a stale write raises
+    Conflict and the writer re-reads and retries (optimistic concurrency). An append-only log
+    records every write and conflict.
+R4  The single-agent baseline gets the same tools and the same instructions in one loop.
+R5  Quality is scored by a deterministic rubric of six checks (score_brief), with truth computed
+    without any model: exam category correct, management correct, every finding's size present,
+    guideline citation real, case citations real and retrieved in the run, no unsupported sizes.
+R6  Measured per run: score, tokens, model calls, wall time, revisions, blackboard writes and
+    conflicts. A run scoring below 5 of 6 counts as a failure.
+R7  The write-up must say whether the extra complexity is justified, from the numbers.
+
+Verification on real data
+-------------------------
+python scripts/verify.py t08    ->  verification/t08_multi_agent.json
+  a. single and sequential on the 8 studies that have confirmed findings; hierarchical and
+     network on 3 of them. Per pattern: mean score, perfect scores, failure rate, mean tokens,
+     mean model calls, mean wall time, and how often each rubric check passed.
+  b. Blackboard concurrency without a model: 8 writers each append 50 items to one entry;
+     recorded: items stored (must be 400), conflicts detected and retried, lost updates (must be 0).
+python -m pytest tests -q   test_blackboard_detects_conflicting_writes
+
+Known limits
+------------
+All agents share one model and one GPU, so "parallel" researchers queue at the model server and
+the network pattern's wall time is not a fair picture of a multi-GPU deployment.

@@ -1,0 +1,58 @@
+TASK 06 - MEMORY AND RETRIEVAL
+===============================
+Covers: concept C14 (working context, short-term history, long-term memory, retrieval,
+persistence), and the retrieval side of the earlier deepwise_rag project.
+
+Job
+---
+Give each agent the right information at each step without overflowing the context window,
+without forgetting what a user asked for last week, and without ever mixing two users.
+
+Requirements
+------------
+R1  Working context (dwagent/memory/working.py). Before every model call the history is fitted
+    to a token budget: system prompt and task always kept, the most recent turns verbatim, older
+    tool observations replaced by one-line stubs; the verbatim window shrinks if needed. The task
+    is repeated as an anchor every 4 steps.
+R2  Short-term history (SessionMemory). Turns of one conversation, persisted in SQLite and keyed
+    by user id and session id. The last 6 turns are replayed, so a follow-up such as "and what
+    follow-up does that need?" resolves.
+R3  Long-term memory (LongTermMemory). Durable preferences per user, written only through the
+    remember tool, capped at 50 per user, de-duplicated, retrieved by BM25 against the current
+    message, and injected into the system prompt. Users can list and delete their memories.
+R4  The agent may not say it remembered something unless the remember call succeeded.
+R5  Credentials and identity numbers are refused by the remember tool.
+R6  Isolation. Memory is keyed by the authenticated user id; there is no argument through which
+    one user can read another's.
+R7  Persistence. Sessions, memories, traces and checkpoints survive a restart.
+R8  Retrieval sources, each returning ids that must be cited:
+      guideline knowledge base   kb/*.md, one chunk per section, BM25 (dwagent/rag/kb.py).
+                                 Patients search only the plain-language glossary; clinicians
+                                 search only the clinical guidelines.
+      similar published cases    the deepwise_rag service over 20,400 PMC-Patients summaries,
+                                 called over HTTP by search_similar_cases with timeout and retry.
+R9  Citations in an answer are checked against the ids retrieved in that run (task 01 R12).
+
+Code
+----
+dwagent/memory/working.py, dwagent/memory/stores.py, dwagent/chat.py
+dwagent/rag/bm25.py, dwagent/rag/kb.py, kb/*.md
+scripts/start_rag.sh starts the deepwise_rag sidecar
+
+Verification on real data
+-------------------------
+python scripts/verify.py t06    ->  verification/t06_memory.json
+  a. Long-term: a doctor asks the assistant to remember a formatting preference; a new session
+     asks a clinical question about a real study; recorded: whether the remember tool was
+     called, what was stored, what was recalled, whether the style was applied.
+  b. Isolation: a second doctor asks the same question; nothing may be recalled.
+  c. Short-term: a follow-up in the same session that only makes sense with the previous turn.
+  d. Working context: a real 20-plus tool-call run with a 2,500-token budget; recorded: history
+     size, size actually sent, and whether the answer is still right.
+python -m pytest tests -q   test_memory_is_per_user_and_bounded,
+                            test_working_context_fits_budget_and_keeps_task
+
+Known limits
+------------
+Long-term memory is lexical (BM25). Dense retrieval and reranking exist in deepwise_rag but only
+the BM25 index was built here. Old context is stubbed, not summarised by a model.

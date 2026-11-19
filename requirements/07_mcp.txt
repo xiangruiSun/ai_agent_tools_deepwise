@@ -1,0 +1,58 @@
+TASK 07 - MODEL CONTEXT PROTOCOL
+=================================
+Covers: Lab 5; concept C15.
+
+Job
+---
+Hospitals differ in PACS, RIS and HIS vendors. Wrapping each system as an MCP server gives the
+agent one standard way to discover and call their capabilities, and puts access control next to
+the data instead of in the prompt.
+
+Requirements
+------------
+R1  Server "deepwise-ct" (dwagent/mcp_layer/server.py), official MCP Python SDK 2.x, stdio
+    transport. Tools: list_ct_studies, check_series_quality, run_nodule_detector,
+    lung_rads_category, search_guideline, get_report. Input schemas come from typed signatures.
+R2  Client (dwagent/mcp_layer/client.py MCPConnection): starts the server, initialises the
+    session, lists tools, calls tools. One session is kept open on a background event loop.
+R3  Host integration (mcp_registry): discovered tools become registry tools with the server's
+    own input schema, so the unchanged agent loop of task 01 calls them. The host passes an
+    allowlist; a tool the server offers but the host has not approved is never shown to the model.
+R4  Responsibilities:
+      Host     the agent runtime. Chooses which servers to connect, which tools to offer, applies
+               its own timeouts and result-size limits, asks the human for approval, keeps the
+               conversation. It is the only part that talks to the model.
+      Client   one per server, inside the host. Speaks the protocol: initialise, list tools,
+               call tool. Holds the connection and nothing else.
+      Server   owns a capability and its data. Declares tools and schemas, validates input,
+               executes, and decides who may call what.
+R5  Where controls are enforced:
+      Authentication   at the server. The caller presents a token (environment variable for
+                       stdio; an Authorization header on HTTP transports). No token, no tools.
+      Authorization    at the server, on every call. The token maps to a principal; the call
+                       runs through the same executor as local tools: role scopes, then the
+                       record-level check. Role or patient id in tool arguments is never trusted.
+      Execution safety at the server: input validation, timeouts, retries, idempotency, audit.
+                       at the host: server and tool allowlists, per-call timeout, treating tool
+                       output as data and not as instructions, human approval for writes.
+R6  Errors cross the protocol as data: {ok:false, error_kind, error, hint}, so the model can
+    recover exactly as with local tools.
+
+Verification on real data
+-------------------------
+python scripts/verify.py t07    ->  verification/t07_mcp.json
+  a. Connect, read server info and protocol version, discover the tools and their schemas.
+  b. Invoke check_series_quality on a real study directly through MCP.
+  c. Run the agent loop with only MCP-discovered tools on a real question; get_report is left
+     off the host allowlist and must not be offered to the model.
+  d. Server-side authorization matrix: the same five calls with no token, a patient token, an
+     employee token and a doctor token.
+  verification/t07_mcp_without_guard.json keeps the first run of (c), made without the grounding
+  guard: the agent skipped lung_rads_category, answered from guideline text and gave the wrong
+  category for a 5.5 mm solid nodule. The guard is now part of the configuration under test.
+
+Known limits
+------------
+stdio only; an HTTP transport with OAuth is what a hospital deployment would use. The token
+table is a demo stand-in for an identity provider. The demo server wraps this project's own
+tools; a real deployment would wrap the hospital's PACS and RIS.

@@ -1,0 +1,308 @@
+{
+  "task": "t09_ct_diagnosis",
+  "ran_at": "2026-11-18 21:52:05",
+  "model": "qwen3:14b",
+  "data": "LIDC-IDRI subset (10 chest CT studies, TCIA, CC BY 3.0); PMC-Patients subset (20,400 cases)",
+  "detector": "classical_v1.1",
+  "studies": [
+    {
+      "patient_id": "LIDC-IDRI-0028",
+      "quality": true,
+      "slices": 141,
+      "reader_nodules": 0,
+      "detected": 0,
+      "missed": [],
+      "false_positives": 12,
+      "candidates": 12,
+      "detector_s": 9.6,
+      "exam_lung_rads": "1"
+    },
+    {
+      "patient_id": "LIDC-IDRI-0062",
+      "quality": true,
+      "slices": 117,
+      "reader_nodules": 0,
+      "detected": 0,
+      "missed": [],
+      "false_positives": 12,
+      "candidates": 12,
+      "detector_s": 8.1,
+      "exam_lung_rads": "1"
+    },
+    {
+      "patient_id": "LIDC-IDRI-0212",
+      "quality": true,
+      "slices": 133,
+      "reader_nodules": 1,
+      "detected": 1,
+      "missed": [],
+      "false_positives": 11,
+      "candidates": 12,
+      "detector_s": 8.1,
+      "exam_lung_rads": "1"
+    },
+    {
+      "patient_id": "LIDC-IDRI-0516",
+      "quality": true,
+      "slices": 122,
+      "reader_nodules": 2,
+      "detected": 1,
+      "missed": [
+        {
+          "id": "R2",
+          "mm": 4.3,
+          "type": "ground_glass"
+        }
+      ],
+      "false_positives": 11,
+      "candidates": 12,
+      "detector_s": 11.8,
+      "exam_lung_rads": "2"
+    },
+    {
+      "patient_id": "LIDC-IDRI-0126",
+      "quality": true,
+      "slices": 137,
+      "reader_nodules": 2,
+      "detected": 1,
+      "missed": [
+        {
+          "id": "R1",
+          "mm": 7.5,
+          "type": "solid"
+        }
+      ],
+      "false_positives": 11,
+      "candidates": 12,
+      "detector_s": 8.3,
+      "exam_lung_rads": "3"
+    },
+    {
+      "patient_id": "LIDC-IDRI-0200",
+      "quality": true,
+      "slices": 117,
+      "reader_nodules": 2,
+      "detected": 2,
+      "missed": [],
+      "false_positives": 10,
+      "candidates": 12,
+      "detector_s": 6.1,
+      "exam_lung_rads": "3"
+    },
+    {
+      "patient_id": "LIDC-IDRI-0005",
+      "quality": true,
+      "slices": 133,
+      "reader_nodules": 3,
+      "detected": 3,
+      "missed": [],
+      "false_positives": 9,
+      "candidates": 12,
+      "detector_s": 8.7,
+      "exam_lung_rads": "4A"
+    },
+    {
+      "patient_id": "LIDC-IDRI-0008",
+      "quality": true,
+      "slices": 133,
+      "reader_nodules": 2,
+      "detected": 1,
+      "missed": [
+        {
+          "id": "R1",
+          "mm": 8.6,
+          "type": "part_solid"
+        }
+      ],
+      "false_positives": 11,
+      "candidates": 12,
+      "detector_s": 7.3,
+      "exam_lung_rads": "4A"
+    },
+    {
+      "patient_id": "LIDC-IDRI-0001",
+      "quality": true,
+      "slices": 133,
+      "reader_nodules": 1,
+      "detected": 1,
+      "missed": [],
+      "false_positives": 11,
+      "candidates": 12,
+      "detector_s": 9.0,
+      "exam_lung_rads": "4X"
+    },
+    {
+      "patient_id": "LIDC-IDRI-0003",
+      "quality": true,
+      "slices": 140,
+      "reader_nodules": 4,
+      "detected": 3,
+      "missed": [
+        {
+          "id": "R1",
+          "mm": 28.5,
+          "type": "ground_glass"
+        }
+      ],
+      "false_positives": 9,
+      "candidates": 12,
+      "detector_s": 7.9,
+      "exam_lung_rads": "4B"
+    }
+  ],
+  "detector_summary": {
+    "reader_nodules": 17,
+    "detected": 13,
+    "sensitivity": 0.765,
+    "false_positives_per_scan": 10.7,
+    "median_runtime_s": 8.2
+  },
+  "lung_rads_boundary_table": [
+    {
+      "type": "solid",
+      "mm": 5.9,
+      "solid_mm": null,
+      "expected": "2",
+      "got": "2"
+    },
+    {
+      "type": "solid",
+      "mm": 6.0,
+      "solid_mm": null,
+      "expected": "3",
+      "got": "3"
+    },
+    {
+      "type": "solid",
+      "mm": 7.9,
+      "solid_mm": null,
+      "expected": "3",
+      "got": "3"
+    },
+    {
+      "type": "solid",
+      "mm": 8.0,
+      "solid_mm": null,
+      "expected": "4A",
+      "got": "4A"
+    },
+    {
+      "type": "solid",
+      "mm": 14.9,
+      "solid_mm": null,
+      "expected": "4A",
+      "got": "4A"
+    },
+    {
+      "type": "solid",
+      "mm": 15.0,
+      "solid_mm": null,
+      "expected": "4B",
+      "got": "4B"
+    },
+    {
+      "type": "part_solid",
+      "mm": 5.9,
+      "solid_mm": 2.0,
+      "expected": "2",
+      "got": "2"
+    },
+    {
+      "type": "part_solid",
+      "mm": 10.0,
+      "solid_mm": 5.9,
+      "expected": "3",
+      "got": "3"
+    },
+    {
+      "type": "part_solid",
+      "mm": 10.0,
+      "solid_mm": 6.0,
+      "expected": "4A",
+      "got": "4A"
+    },
+    {
+      "type": "part_solid",
+      "mm": 12.0,
+      "solid_mm": 8.0,
+      "expected": "4B",
+      "got": "4B"
+    },
+    {
+      "type": "ground_glass",
+      "mm": 29.9,
+      "solid_mm": null,
+      "expected": "2",
+      "got": "2"
+    },
+    {
+      "type": "ground_glass",
+      "mm": 30.0,
+      "solid_mm": null,
+      "expected": "3",
+      "got": "3"
+    },
+    {
+      "type": "solid",
+      "mm": 3.9,
+      "solid_mm": null,
+      "is_baseline": false,
+      "is_new": true,
+      "expected": "2",
+      "got": "2"
+    },
+    {
+      "type": "solid",
+      "mm": 4.0,
+      "solid_mm": null,
+      "is_baseline": false,
+      "is_new": true,
+      "expected": "3",
+      "got": "3"
+    },
+    {
+      "type": "solid",
+      "mm": 6.0,
+      "solid_mm": null,
+      "is_baseline": false,
+      "is_new": true,
+      "expected": "4A",
+      "got": "4A"
+    },
+    {
+      "type": "solid",
+      "mm": 8.0,
+      "solid_mm": null,
+      "is_baseline": false,
+      "is_growing": true,
+      "expected": "4B",
+      "got": "4B"
+    },
+    {
+      "type": "solid",
+      "mm": 7.0,
+      "solid_mm": null,
+      "is_baseline": false,
+      "is_growing": true,
+      "expected": "4A",
+      "got": "4A"
+    },
+    {
+      "type": "solid",
+      "mm": 20.0,
+      "solid_mm": null,
+      "benign_calcification": true,
+      "expected": "1",
+      "got": "1"
+    },
+    {
+      "type": "solid",
+      "mm": 7.0,
+      "solid_mm": null,
+      "suspicious_features": true,
+      "expected": "4X",
+      "got": "4X"
+    }
+  ],
+  "lung_rads_table_all_correct": true
+}

@@ -1,0 +1,275 @@
+{
+  "task": "t02_structured_output",
+  "ran_at": "2026-11-18 22:08:50",
+  "model": "qwen3:14b",
+  "data": "LIDC-IDRI subset (10 chest CT studies, TCIA, CC BY 3.0); PMC-Patients subset (20,400 cases)",
+  "studies": [
+    {
+      "patient_id": "LIDC-IDRI-0212",
+      "n_findings": 1,
+      "schema_constrained": {
+        "valid": true,
+        "first_pass": true,
+        "attempts": 1,
+        "stages": [
+          "ok"
+        ],
+        "tokens": 570,
+        "errors": []
+      },
+      "free_text_json": {
+        "valid": true,
+        "first_pass": true,
+        "attempts": 1,
+        "stages": [
+          "ok"
+        ],
+        "tokens": 1367,
+        "errors": []
+      },
+      "wrong_category_injected": {
+        "caught_by_rules": true,
+        "errors": [
+          "F1.lung_rads is 4B but the Lung-RADS rules give 1"
+        ]
+      }
+    },
+    {
+      "patient_id": "LIDC-IDRI-0516",
+      "n_findings": 2,
+      "schema_constrained": {
+        "valid": true,
+        "first_pass": true,
+        "attempts": 1,
+        "stages": [
+          "ok"
+        ],
+        "tokens": 772,
+        "errors": []
+      },
+      "free_text_json": {
+        "valid": true,
+        "first_pass": true,
+        "attempts": 1,
+        "stages": [
+          "ok"
+        ],
+        "tokens": 1605,
+        "errors": []
+      },
+      "wrong_category_injected": {
+        "caught_by_rules": true,
+        "errors": [
+          "F1.lung_rads is 1 but the Lung-RADS rules give 2"
+        ]
+      }
+    },
+    {
+      "patient_id": "LIDC-IDRI-0126",
+      "n_findings": 2,
+      "schema_constrained": {
+        "valid": true,
+        "first_pass": true,
+        "attempts": 1,
+        "stages": [
+          "ok"
+        ],
+        "tokens": 796,
+        "errors": []
+      },
+      "free_text_json": {
+        "valid": true,
+        "first_pass": true,
+        "attempts": 1,
+        "stages": [
+          "ok"
+        ],
+        "tokens": 1584,
+        "errors": []
+      },
+      "wrong_category_injected": {
+        "caught_by_rules": true,
+        "errors": [
+          "F1.lung_rads is 1 but the Lung-RADS rules give 3"
+        ]
+      }
+    },
+    {
+      "patient_id": "LIDC-IDRI-0200",
+      "n_findings": 2,
+      "schema_constrained": {
+        "valid": true,
+        "first_pass": true,
+        "attempts": 1,
+        "stages": [
+          "ok"
+        ],
+        "tokens": 788,
+        "errors": []
+      },
+      "free_text_json": {
+        "valid": true,
+        "first_pass": true,
+        "attempts": 1,
+        "stages": [
+          "ok"
+        ],
+        "tokens": 1583,
+        "errors": []
+      },
+      "wrong_category_injected": {
+        "caught_by_rules": true,
+        "errors": [
+          "F1.lung_rads is 1 but the Lung-RADS rules give 3"
+        ]
+      }
+    },
+    {
+      "patient_id": "LIDC-IDRI-0005",
+      "n_findings": 3,
+      "schema_constrained": {
+        "valid": true,
+        "first_pass": true,
+        "attempts": 1,
+        "stages": [
+          "ok"
+        ],
+        "tokens": 998,
+        "errors": []
+      },
+      "free_text_json": {
+        "valid": true,
+        "first_pass": true,
+        "attempts": 1,
+        "stages": [
+          "ok"
+        ],
+        "tokens": 1826,
+        "errors": []
+      },
+      "wrong_category_injected": {
+        "caught_by_rules": true,
+        "errors": [
+          "F1.lung_rads is 1 but the Lung-RADS rules give 4A"
+        ]
+      }
+    },
+    {
+      "patient_id": "LIDC-IDRI-0008",
+      "n_findings": 2,
+      "schema_constrained": {
+        "valid": true,
+        "first_pass": true,
+        "attempts": 1,
+        "stages": [
+          "ok"
+        ],
+        "tokens": 809,
+        "errors": []
+      },
+      "free_text_json": {
+        "valid": true,
+        "first_pass": true,
+        "attempts": 1,
+        "stages": [
+          "ok"
+        ],
+        "tokens": 1685,
+        "errors": []
+      },
+      "wrong_category_injected": {
+        "caught_by_rules": true,
+        "errors": [
+          "F1.lung_rads is 1 but the Lung-RADS rules give 3"
+        ]
+      }
+    },
+    {
+      "patient_id": "LIDC-IDRI-0001",
+      "n_findings": 1,
+      "schema_constrained": {
+        "valid": true,
+        "first_pass": true,
+        "attempts": 1,
+        "stages": [
+          "ok"
+        ],
+        "tokens": 664,
+        "errors": []
+      },
+      "free_text_json": {
+        "valid": true,
+        "first_pass": true,
+        "attempts": 1,
+        "stages": [
+          "ok"
+        ],
+        "tokens": 1469,
+        "errors": []
+      },
+      "wrong_category_injected": {
+        "caught_by_rules": true,
+        "errors": [
+          "F1.lung_rads is 1 but the Lung-RADS rules give 4X",
+          "impression must state 'Lung-RADS 4X'"
+        ]
+      }
+    },
+    {
+      "patient_id": "LIDC-IDRI-0003",
+      "n_findings": 4,
+      "schema_constrained": {
+        "valid": true,
+        "first_pass": true,
+        "attempts": 1,
+        "stages": [
+          "ok"
+        ],
+        "tokens": 1183,
+        "errors": []
+      },
+      "free_text_json": {
+        "valid": true,
+        "first_pass": true,
+        "attempts": 1,
+        "stages": [
+          "ok"
+        ],
+        "tokens": 2097,
+        "errors": []
+      },
+      "wrong_category_injected": {
+        "caught_by_rules": true,
+        "errors": [
+          "F1.lung_rads is 1 but the Lung-RADS rules give 2"
+        ]
+      }
+    }
+  ],
+  "summary": {
+    "schema_constrained": {
+      "valid": 8,
+      "first_pass": 8,
+      "of": 8,
+      "mean_attempts": 1.0
+    },
+    "free_text_json": {
+      "valid": 8,
+      "first_pass": 8,
+      "of": 8,
+      "mean_attempts": 1.0
+    },
+    "wrong_category_caught": 8,
+    "of": 8
+  },
+  "authorization_matrix": {
+    "patient_save_draft": "unauthorized",
+    "employee_save_draft": "unauthorized",
+    "doctor_save_draft": "allowed",
+    "patient_reads_own": "allowed",
+    "patient_reads_other": "unauthorized",
+    "employee_reads_report": "unauthorized",
+    "doctor_reads_report": "allowed",
+    "doctor_sign_without_approval": "paused_for_human_approval"
+  }
+}

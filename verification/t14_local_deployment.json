@@ -1,0 +1,97 @@
+{
+  "task": "t14_local_deployment",
+  "ran_at": "2026-11-18 22:31:12",
+  "model": "qwen3:14b",
+  "data": "LIDC-IDRI subset (10 chest CT studies, TCIA, CC BY 3.0); PMC-Patients subset (20,400 cases)",
+  "dicom_gateway": {
+    "ae_title": "DEEPWISE_AI",
+    "transport": "DICOM C-STORE over TCP, 127.0.0.1:11112",
+    "full_series": {
+      "established": true,
+      "sent": 133,
+      "accepted": 133,
+      "seconds": 2.4,
+      "files_on_disk": 133,
+      "pixel_data_identical_first_10": true
+    },
+    "partial_series": {
+      "established": true,
+      "sent": 40,
+      "accepted": 40
+    },
+    "unknown_device": {
+      "established": false,
+      "sent": 0,
+      "accepted": 0
+    },
+    "associations_rejected": 1,
+    "arrival_records": [
+      {
+        "patient_id": "LIDC-IDRI-0005",
+        "files": 133,
+        "calling_ae": "CT_SCANNER_1"
+      },
+      {
+        "patient_id": "LIDC-IDRI-0126",
+        "files": 40,
+        "calling_ae": "HOSPITAL_PACS"
+      }
+    ]
+  },
+  "partial_series_through_pipeline": {
+    "status": "completed",
+    "outcome": "rejected_quality",
+    "issues": [
+      "31 gaps between slices: the series is incomplete",
+      "only 40 slices: the lungs are unlikely to be fully covered"
+    ],
+    "path": [
+      "intake",
+      "quality_gate",
+      "reject"
+    ],
+    "detector_run": false
+  },
+  "egress_guard": {
+    "profile": "onprem",
+    "http://127.0.0.1:11434": "allowed",
+    "https://api.example-llm.com/v1": "blocked: on-prem profile: outbound call to 'api.example-llm.com' is not allowed",
+    "llm_client_to_external_host": "blocked before any request was made"
+  },
+  "node_health": {
+    "profile": "onprem",
+    "model_server": {
+      "ok": true,
+      "configured_model": "qwen3:14b",
+      "installed_models": [
+        "qwen3:14b",
+        "qwen3:4b"
+      ]
+    },
+    "retrieval_service": {
+      "ok": true
+    },
+    "gpu": {
+      "ok": true,
+      "name": "NVIDIA GeForce RTX 4090",
+      "memory_used_mb": 14483,
+      "memory_total_mb": 24564,
+      "utilization_pct": 46
+    },
+    "disk": {
+      "ok": true,
+      "free_gb": 202.5,
+      "total_gb": 2024.8
+    },
+    "ct_archive": {
+      "ok": true,
+      "studies": 10
+    },
+    "database": {
+      "ok": true,
+      "runs": 119,
+      "pending_approvals": 2
+    },
+    "healthy": true
+  }
+}

@@ -1,0 +1,478 @@
+{
+  "deid_audit": {
+    "studies": 10,
+    "passed": 10,
+    "findings": [],
+    "private_tags_per_file_sample": [
+      15,
+      15,
+      15,
+      15,
+      15,
+      15,
+      15,
+      15,
+      15,
+      15
+    ]
+  },
+  "cohort_builder": {
+    "requests": [
+      {
+        "request": "Solid nodules of at least 8 mm on scans with slices no thicker than 2.5 mm",
+        "parsed": {
+          "min_diameter_mm": 8.0,
+          "max_diameter_mm": null,
+          "max_slice_thickness_mm": 2.5,
+          "contrast": null,
+          "min_readers": 1,
+          "texture": "solid",
+          "min_malignancy": null
+        },
+        "expected": {
+          "min_diameter_mm": 8.0,
+          "max_diameter_mm": null,
+          "max_slice_thickness_mm": 2.5,
+          "contrast": null,
+          "min_readers": 1,
+          "texture": "solid",
+          "min_malignancy": null
+        },
+        "attempts": [
+          "rules",
+          "ok"
+        ],
+        "query_matches_expected": true,
+        "matching_scans": 521,
+        "expected_matching_scans": 521
+      },
+      {
+        "request": "Ground-glass nodules, any size, non-contrast scans only",
+        "parsed": {
+          "min_diameter_mm": null,
+          "max_diameter_mm": null,
+          "max_slice_thickness_mm": null,
+          "contrast": false,
+          "min_readers": 1,
+          "texture": "ground_glass",
+          "min_malignancy": null
+        },
+        "expected": {
+          "min_diameter_mm": null,
+          "max_diameter_mm": null,
+          "max_slice_thickness_mm": null,
+          "contrast": false,
+          "min_readers": 1,
+          "texture": "ground_glass",
+          "min_malignancy": null
+        },
+        "attempts": [
+          "rules",
+          "ok"
+        ],
+        "query_matches_expected": true,
+        "matching_scans": 183,
+        "expected_matching_scans": 183
+      },
+      {
+        "request": "Scans where at least three radiologists marked a nodule of 6 to 15 mm",
+        "parsed": {
+          "min_diameter_mm": 6.0,
+          "max_diameter_mm": 15.0,
+          "max_slice_thickness_mm": null,
+          "contrast": null,
+          "min_readers": 3,
+          "texture": null,
+          "min_malignancy": null
+        },
+        "expected": {
+          "min_diameter_mm": 6.0,
+          "max_diameter_mm": 15.0,
+          "max_slice_thickness_mm": null,
+          "contrast": null,
+          "min_readers": 3,
+          "texture": null,
+          "min_malignancy": null
+        },
+        "attempts": [
+          "ok"
+        ],
+        "query_matches_expected": true,
+        "matching_scans": 535,
+        "expected_matching_scans": 535
+      },
+      {
+        "request": "Nodules the readers rated as likely malignant, rating 4 or higher, at least 10 mm",
+        "parsed": {
+          "min_diameter_mm": 10.0,
+          "max_diameter_mm": null,
+          "max_slice_thickness_mm": null,
+          "contrast": null,
+          "min_readers": 1,
+          "texture": null,
+          "min_malignancy": 4
+        },
+        "expected": {
+          "min_diameter_mm": 10.0,
+          "max_diameter_mm": null,
+          "max_slice_thickness_mm": null,
+          "contrast": null,
+          "min_readers": 1,
+          "texture": null,
+          "min_malignancy": 4
+        },
+        "attempts": [
+          "ok"
+        ],
+        "query_matches_expected": true,
+        "matching_scans": 394,
+        "expected_matching_scans": 394
+      },
+      {
+        "request": "Part-solid nodules on contrast-enhanced scans",
+        "parsed": {
+          "min_diameter_mm": null,
+          "max_diameter_mm": null,
+          "max_slice_thickness_mm": null,
+          "contrast": true,
+          "min_readers": 1,
+          "texture": "part_solid",
+          "min_malignancy": null
+        },
+        "expected": {
+          "min_diameter_mm": null,
+          "max_diameter_mm": null,
+          "max_slice_thickness_mm": null,
+          "contrast": true,
+          "min_readers": 1,
+          "texture": "part_solid",
+          "min_malignancy": null
+        },
+        "attempts": [
+          "rules",
+          "ok"
+        ],
+        "query_matches_expected": true,
+        "matching_scans": 57,
+        "expected_matching_scans": 57
+      }
+    ],
+    "exact_query_match": 5,
+    "of": 5
+  },
+  "label_extraction": {
+    "cases": [
+      {
+        "case_id": "case_973e5fc5a724a497479c",
+        "source_id": "pmc_3479761-1",
+        "accepted": true,
+        "attempts": 2,
+        "stages": [
+          "rules",
+          "ok"
+        ],
+        "labels": {
+          "has_pulmonary_nodule_or_mass": true,
+          "largest_lesion_mm": 8.0,
+          "laterality": "right",
+          "imaging_modalities": [
+            "CT"
+          ],
+          "malignancy_confirmed": "yes",
+          "evidence_quote": "there was a slight increase in the size of right lobe nodule from 0.6 to 0.8 cm"
+        },
+        "size_found_by_regex_too": true,
+        "route": "training_set"
+      },
+      {
+        "case_id": "case_039d6e832b47eca8577b",
+        "source_id": "pmc_5946561-1",
+        "accepted": true,
+        "attempts": 2,
+        "stages": [
+          "rules",
+          "ok"
+        ],
+        "labels": {
+          "has_pulmonary_nodule_or_mass": true,
+          "largest_lesion_mm": 18.0,
+          "laterality": "right",
+          "imaging_modalities": [
+            "CT",
+            "PET"
+          ],
+          "malignancy_confirmed": "not_stated",
+          "evidence_quote": "a 1.8 cm \u00d7 1.7 cm nodular opacity in the right lower lobe, which was not present on a previous scan 1 year prior. We attribute the 1.8 cm growth within 1 year to be due to this copious mucin production. Subsequently, contrast-enhanced CT of the chest was performed which showed a 1.8 cm, mildly spicu"
+        },
+        "size_found_by_regex_too": true,
+        "route": "training_set"
+      },
+      {
+        "case_id": "case_66d7da728dcbdf0cec16",
+        "source_id": "pmc_4876159-1",
+        "accepted": true,
+        "attempts": 1,
+        "stages": [
+          "ok"
+        ],
+        "labels": {
+          "has_pulmonary_nodule_or_mass": true,
+          "largest_lesion_mm": 9.0,
+          "laterality": "right",
+          "imaging_modalities": [
+            "CT"
+          ],
+          "malignancy_confirmed": "yes",
+          "evidence_quote": "an approximately 9-mm lobar nodule was observed"
+        },
+        "size_found_by_regex_too": false,
+        "route": "training_set"
+      },
+      {
+        "case_id": "case_b8ab4cddfbb5ee0cfd2a",
+        "source_id": "pmc_5564585-1",
+        "accepted": true,
+        "attempts": 1,
+        "stages": [
+          "ok"
+        ],
+        "labels": {
+          "has_pulmonary_nodule_or_mass": true,
+          "largest_lesion_mm": 13.0,
+          "laterality": "bilateral",
+          "imaging_modalities": [
+            "CT"
+          ],
+          "malignancy_confirmed": "not_stated",
+          "evidence_quote": "She underwent thoracoscopic wedge resection of the largest pulmonary nodule, which measured 13 mm in the greatest dimension."
+        },
+        "size_found_by_regex_too": true,
+        "route": "training_set"
+      },
+      {
+        "case_id": "case_eb574ed07d5a9059d570",
+        "source_id": "pmc_3680615-1",
+        "accepted": true,
+        "attempts": 1,
+        "stages": [
+          "ok"
+        ],
+        "labels": {
+          "has_pulmonary_nodule_or_mass": true,
+          "largest_lesion_mm": 12.0,
+          "laterality": "left",
+          "imaging_modalities": [
+            "CT",
+            "PET",
+            "X-ray"
+          ],
+          "malignancy_confirmed": "no",
+          "evidence_quote": "Additional chest computed tomography (CT) showed a 1.2-cm-long nodule at the left lower lobe, which matched the location in the I-131 scan results ()."
+        },
+        "size_found_by_regex_too": false,
+        "route": "training_set"
+      },
+      {
+        "case_id": "case_59776f24a4cf296535ef",
+        "source_id": "pmc_8437819-1",
+        "accepted": true,
+        "attempts": 1,
+        "stages": [
+          "ok"
+        ],
+        "labels": {
+          "has_pulmonary_nodule_or_mass": true,
+          "largest_lesion_mm": 27.0,
+          "laterality": "left",
+          "imaging_modalities": [
+            "CT",
+            "PET"
+          ],
+          "malignancy_confirmed": "no",
+          "evidence_quote": "The nodule was 27 \u00d7 18 \u00d7 16 mm in size and was elliptical with well-defined margins."
+        },
+        "size_found_by_regex_too": true,
+        "route": "training_set"
+      },
+      {
+        "case_id": "case_9bbbe6750d1e4aa1fd4f",
+        "source_id": "pmc_2491653-1",
+        "accepted": true,
+        "attempts": 1,
+        "stages": [
+          "ok"
+        ],
+        "labels": {
+          "has_pulmonary_nodule_or_mass": false,
+          "largest_lesion_mm": null,
+          "laterality": "right",
+          "imaging_modalities": [
+            "CT"
+          ],
+          "malignancy_confirmed": "yes",
+          "evidence_quote": ""
+        },
+        "size_found_by_regex_too": false,
+        "route": "training_set"
+      },
+      {
+        "case_id": "case_bbe5532d2a7c9b758522",
+        "source_id": "pmc_3196962-1",
+        "accepted": true,
+        "attempts": 1,
+        "stages": [
+          "ok"
+        ],
+        "labels": {
+          "has_pulmonary_nodule_or_mass": false,
+          "largest_lesion_mm": null,
+          "laterality": "not_stated",
+          "imaging_modalities": [],
+          "malignancy_confirmed": "not_stated",
+          "evidence_quote": ""
+        },
+        "size_found_by_regex_too": false,
+        "route": "training_set"
+      },
+      {
+        "case_id": "case_7cf4ad9f30dc35dde06e",
+        "source_id": "pmc_3996496-1",
+        "accepted": true,
+        "attempts": 1,
+        "stages": [
+          "ok"
+        ],
+        "labels": {
+          "has_pulmonary_nodule_or_mass": true,
+          "largest_lesion_mm": null,
+          "laterality": "right",
+          "imaging_modalities": [
+            "CT"
+          ],
+          "malignancy_confirmed": "yes",
+          "evidence_quote": ""
+        },
+        "size_found_by_regex_too": false,
+        "route": "training_set"
+      },
+      {
+        "case_id": "case_74c8a46b87039c6cc0c6",
+        "source_id": "pmc_4631926-1",
+        "accepted": true,
+        "attempts": 2,
+        "stages": [
+          "rules",
+          "ok"
+        ],
+        "labels": {
+          "has_pulmonary_nodule_or_mass": true,
+          "largest_lesion_mm": null,
+          "laterality": "left",
+          "imaging_modalities": [
+            "CT",
+            "CT"
+          ],
+          "malignancy_confirmed": "not_stated",
+          "evidence_quote": ""
+        },
+        "size_found_by_regex_too": false,
+        "route": "training_set"
+      },
+      {
+        "case_id": "case_eca8963447b0457ddee0",
+        "source_id": "pmc_6338684-1",
+        "accepted": true,
+        "attempts": 1,
+        "stages": [
+          "ok"
+        ],
+        "labels": {
+          "has_pulmonary_nodule_or_mass": false,
+          "largest_lesion_mm": null,
+          "laterality": "not_stated",
+          "imaging_modalities": [],
+          "malignancy_confirmed": "not_stated",
+          "evidence_quote": ""
+        },
+        "size_found_by_regex_too": false,
+        "route": "training_set"
+      },
+      {
+        "case_id": "case_0128916f45c13d457e27",
+        "source_id": "pmc_2627170-1",
+        "accepted": true,
+        "attempts": 1,
+        "stages": [
+          "ok"
+        ],
+        "labels": {
+          "has_pulmonary_nodule_or_mass": false,
+          "largest_lesion_mm": null,
+          "laterality": "left",
+          "imaging_modalities": [
+            "MRI",
+            "PET"
+          ],
+          "malignancy_confirmed": "yes",
+          "evidence_quote": ""
+        },
+        "size_found_by_regex_too": false,
+        "route": "training_set"
+      }
+    ],
+    "accepted": 12,
+    "of": 12,
+    "with_size": 6,
+    "size_confirmed_by_regex": 4
+  },
+  "hard_example_queue": [
+    {
+      "patient_id": "LIDC-IDRI-0516",
+      "missed": [
+        {
+          "nodule_id": "R2",
+          "mean_diameter_mm": 4.3,
+          "nodule_type": "ground_glass",
+          "readers": 1
+        }
+      ]
+    },
+    {
+      "patient_id": "LIDC-IDRI-0126",
+      "missed": [
+        {
+          "nodule_id": "R1",
+          "mean_diameter_mm": 7.5,
+          "nodule_type": "solid",
+          "readers": 3
+        }
+      ]
+    },
+    {
+      "patient_id": "LIDC-IDRI-0008",
+      "missed": [
+        {
+          "nodule_id": "R1",
+          "mean_diameter_mm": 8.6,
+          "nodule_type": "part_solid",
+          "readers": 3
+        }
+      ]
+    },
+    {
+      "patient_id": "LIDC-IDRI-0003",
+      "missed": [
+        {
+          "nodule_id": "R1",
+          "mean_diameter_mm": 28.5,
+          "nodule_type": "ground_glass",
+          "readers": 1
+        }
+      ]
+    }
+  ],
+  "task": "t10_training_data",
+  "ran_at": "2026-11-18 22:58:31",
+  "model": "qwen3:14b",
+  "data": "LIDC-IDRI subset (10 chest CT studies, TCIA, CC BY 3.0); PMC-Patients subset (20,400 cases)"
+}

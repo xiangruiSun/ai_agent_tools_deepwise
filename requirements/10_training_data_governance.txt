@@ -1,0 +1,57 @@
+TASK 10 - TRAINING DATA GOVERNANCE
+===================================
+Deepwise focus: model training data.
+
+Job
+---
+Before any image or label reaches a training set, prove it is de-identified, selected by an
+explicit cohort definition, labelled with evidence, and that disagreements go to people.
+
+Requirements
+------------
+R1  De-identification audit (deid_audit, dwagent/ct/store.py). Samples the DICOM headers of a
+    study and reports which identifying fields are populated (name, birth date, address,
+    physician names, institution, accession number, device serial number), the
+    PatientIdentityRemoved flag, the de-identification method, burned-in annotation flag and the
+    number of private tags. It returns field names and counts only, never values.
+R2  Cohort builder (build_cohort). A request in words is turned into a validated CohortQuery
+    (size range, slice thickness, contrast, reader agreement, texture, malignancy rating) by
+    structured output; the query is executed by code against the annotation database of all
+    1,018 LIDC scans. The model never writes SQL and never counts.
+    The generation schema (CohortQueryStrict) makes every field required, and business rules
+    (governance.cohort_rules) reject a query that omits something the request names, such as
+    the nodule texture or the contrast condition; the errors go back through the repair loop.
+    Measured reason: with optional fields the model returned an empty query for all 5 requests,
+    and with required fields it still left texture null in 3 of 5 until the rule was added
+    (verification/t10_before_cohort_rules.json keeps that run).
+    Size filtering reads the contour table once and caches it; per-annotation queries on the
+    unindexed table took minutes and timed out the tool.
+R3  Label extraction (dwagent/governance.py). Structured labels from published case text:
+    nodule or mass present, largest lesion in mm, laterality, modalities, malignancy confirmed,
+    and an evidence quote. Accepted only if anchored: the quote is an exact substring of the
+    text and the size is a number in that quote (centimetres converted). Unanchored labels are
+    routed to human review, not to the training set.
+R4  Independent cross-check: a model-free regular expression extracts sizes from the same text.
+R5  Hard-example queue (detector_vs_readers). Per study: nodules the readers marked and the
+    detector missed, with size and type, for the next training round.
+R6  Dataset overview: local studies by size band, bytes, licence, and annotation-database counts.
+R7  Authorization. These tools need the dataset:read scope, held by company staff. Staff have no
+    access to patient reports or images through any tool or route (task 13).
+R8  Licence tracking. Each dataset's licence is recorded in data/README.md and in the manifest.
+    PMC-Patients is non-commercial; it may be used for this research demo and not in a product.
+
+Verification on real data
+-------------------------
+python scripts/verify.py t10    ->  verification/t10_training_data.json
+  a. De-identification audit of all 10 studies.
+  b. Five cohort requests in words; for each, the parsed query against a hand-written query and
+     the resulting scan counts against the hand-written query's counts.
+  c. Label extraction on 12 real PMC-Patients summaries: accepted or sent to review, attempts,
+     and whether the regular expression finds the same size.
+  d. The hard-example queue over the 10 studies.
+
+Known limits
+------------
+The audit reads header fields and flags; it does not look for text burned into pixels. The
+cohort size filter uses the largest in-plane contour extent of an annotation, an approximation
+of nodule diameter. Labels are checked for anchoring, not for clinical correctness.

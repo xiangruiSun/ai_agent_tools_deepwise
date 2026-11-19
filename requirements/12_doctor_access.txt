@@ -1,0 +1,55 @@
+TASK 12 - DOCTOR ACCESS
+========================
+Deepwise focus: doctor access.
+
+Job
+---
+Give the radiologist a worklist, an image viewer, the study pipeline with sign-off, and a
+copilot that answers questions from tools and cites what it used.
+
+Requirements
+------------
+R1  Worklist. Every study with slice count, thickness, report status (none, draft, signed) and
+    exam category.
+R2  Study view. Windowed CT images with a slider; confirmed findings circled on their slice;
+    acquisition check; the findings table with size, type, location and whether each came from
+    the detector or was added by a reader.
+R3  Run the pipeline from the study view; see the nodes as they complete, the draft source
+    (model, template, template after failed validation), the critical flag and the trace.
+R4  Sign-off queue. Runs paused at a checkpoint, each with its draft; approve and sign, or
+    reject. The decision resumes the run. The agent can never sign: sign_report requires an
+    approval record created by a doctor's action in the portal.
+R5  Copilot (dwagent/profiles.py DOCTOR). Tools: list_ct_studies, get_series_metadata,
+    check_series_quality, run_nodule_detector, get_confirmed_findings, lung_rads_category,
+    search_guideline, search_similar_cases, get_report, calculator, the assess_nodules skill, and
+    remember.
+R6  Copilot rules: facts only from tools; categories only from the Lung-RADS tool or the skill;
+    detector candidates are described as unreviewed; guideline and case ids are cited; a failed
+    tool is reported, not papered over; the grounding guard of task 01 checks every answer.
+R7  Similar cases come from published case reports and are labelled as such, never presented as
+    this hospital's patients.
+R8  Role separation. A doctor account can read every study and report, draft and sign. It has no
+    access to operations, audit or dataset-governance tools.
+R9  Every answer shows its trace: model calls, tool calls with inputs and outputs, latency,
+    tokens, retries, and why the run stopped.
+
+Code
+----
+dwagent/profiles.py, dwagent/web/app.py (/api/worklist, /api/studies, /api/approvals, /api/chat)
+dwagent/web/static/app.js (pageWorklist, pageStudy, pageApprovals, pageChat)
+
+Verification on real data
+-------------------------
+python scripts/verify.py t12    ->  verification/t12_doctor_access.json
+  Five real questions through the chat path: a critical-result assessment, a study with no
+  findings, "which finding drives the exam category", a guideline question about a new 5 mm
+  nodule, and similar published cases for a real study. Recorded: tools used, whether the
+  expected fact is in the answer, tokens, time.
+Browser check on the running portal (2026-11-18): worklist of 10 studies, study view with image
+and findings, pipeline run to "waiting for you", approval, report signed and then visible in the
+patient account.
+
+Known limits
+------------
+The viewer shows one axial series in a fixed lung window, with no measurement tools. The
+copilot's similar-case search is lexical.

@@ -1,0 +1,66 @@
+TASK 03 - AGENT RUNTIME
+========================
+Covers: Lab 3; concepts C3, C16, C17.
+
+Job
+---
+A CT study takes seconds of image analysis, one model call and then waits, possibly for hours,
+for a radiologist. The run must hold its state, branch on results, survive a restart of the AI
+server, and stop for a human before anything becomes final.
+
+Requirements
+------------
+R1  State. One JSON object per run: task state (patient, outcome), tool results (meta, quality,
+    detector, evidence, categories), execution history (node, status, attempt, ms), usage
+    (tokens, steps), and what the run is waiting for.
+R2  Graph. Nodes are functions state -> partial update. Edges are fixed or conditional routers.
+    The graph is validated before it runs (unknown targets, nodes without an exit).
+R3  Conditional routing on tool results:
+      quality_gate   passed -> detect            failed -> reject (no detector is run)
+      review         findings -> categorize      none   -> draft_normal (no model call)
+R4  Checkpointing. The state and the next node are written to SQLite after every node, before the
+    next node starts. A run can be resumed from its run id by a new process with nothing in
+    memory.
+R5  Interruption. A node can raise Interrupt to wait for a human. The checkpoint points at the
+    same node, so resume re-enters it. Used at signoff.
+R6  Failure. A node that raises is retried up to max_node_attempts; then the run is marked
+    failed at that node with its checkpoint intact, and resume retries from there. Nodes that
+    already completed are not run again; tool results are also idempotent per run.
+R7  Safety limits per run: max_steps (guards against routing loops), wall clock, token budget.
+    A run that hits a limit stops with status "limit" and can be inspected or resumed.
+R8  Human approval. sign_report requires an approval record. Rejection ends the run with outcome
+    signoff_rejected and the report stays a draft.
+R9  Traces. Every node, model call and tool call is a span with latency, tokens, attempts and
+    error kind. A pause for approval is recorded but is not counted as an error.
+R10 The language model is used at one node only (draft). Everything else is a fixed workflow.
+
+The graph (dwagent/pipelines/ct_study.py)
+-----------------------------------------
+intake -> quality_gate -+-> reject -> END
+                        +-> detect -> review -+-> draft_normal ---+
+                                              +-> categorize -> draft -+-> critical_check
+                                                -> save_draft -> signoff -> END
+
+Code
+----
+dwagent/runtime/graph.py     Graph, Env, Limits, Checkpointer, Interrupt, RunResult
+dwagent/runtime/trace.py     Tracer, spans, summary, redacted_events
+dwagent/store.py             SQLite schema: runs, spans, checkpoints, approvals, idempotency
+dwagent/pipelines/ct_study.py
+
+Verification on real data
+-------------------------
+python scripts/verify.py t03    ->  verification/t03_agent_runtime.json
+  a. All 10 studies through the pipeline: path taken, draft source and attempts, exam category
+     against the code-computed truth, tokens, per-node milliseconds, number of checkpoints. Each
+     run stops at signoff, an approval is recorded, and the run is resumed to "signed".
+  b. Crash and resume: the model client raises during draft; a fresh environment resumes the run
+     from the checkpoint; the detector must have run exactly once.
+  c. Human rejection: the approval is rejected and the run ends with signoff_rejected.
+  d. Step limit: a budget of 3 steps stops the run before review.
+  e. task 14 adds the reject route with a real incomplete series received over DICOM.
+
+Known limits
+------------
+One process and SQLite: fine for one AI server per hospital, not for a shared multi-node queue.
+Approvals are resumed synchronously inside the request that records the decision.

@@ -1,0 +1,70 @@
+TASK 04 - REASONING STRATEGIES, PLANNING AND FAILURE MODES
+===========================================================
+Covers: concepts C5 (CoT, self-reflection, Tree of Thoughts), C6, C7, C8.
+
+Job
+---
+Decide, with measurements rather than opinion, how much reasoning machinery a clinical question
+deserves, and make multi-step requests run as a checked plan instead of an open-ended loop.
+
+Part A - reasoning strategies
+-----------------------------
+R1  Four strategies behind one function (dwagent/agent/strategies.py), all without tools:
+      direct    1 call, answer only
+      cot       1 call, step-by-step reasoning then the answer (Chain of Thought)
+      reflect   answer, critique against the reference text, revise (Self-Reflection), 3 calls
+      tot       3 independent reasoning paths, an evaluator picks one (Tree of Thoughts, breadth
+                3, depth 1), 4 calls
+R2  Each returns the answer, the number of calls, tokens and latency, so cost can be set against
+    accuracy on the same items.
+R3  A fifth arm answers the same items with the deterministic tool (ReAct with
+    lung_rads_category), which is the design the product uses.
+Trade-offs to be shown by the numbers: reflection and ToT multiply calls and tokens; a rule that
+can be coded should be a tool, not a reasoning exercise.
+
+Part B - planning and task decomposition
+----------------------------------------
+R4  Planner (dwagent/agent/planner.py). One structured model call turns a goal into a Plan:
+    steps {id, purpose, tool, literal arguments, depends_on}. At most 8 steps.
+R5  Plan validation before anything runs:
+      - a step naming a tool that does not exist or is not allowed for this user is rejected
+        (hallucinated task, or drift outside the user's remit)
+      - arguments must validate against that tool's schema
+      - dependencies must name steps in the plan; cycles are rejected
+    Errors go back to the planner through the same bounded repair loop as task 02.
+R6  Executor. The dependency graph is run level by level; steps in the same level run in
+    parallel through the normal tool executor. A failed step marks its dependents as skipped.
+R7  One bounded re-plan when steps fail, with the failures given to the planner.
+R8  Synthesis. A final model call writes the answer from the step results only.
+R9  The plan, its levels, step outcomes, attempts and tokens are returned for inspection.
+
+Part C - failure modes and their controls
+-----------------------------------------
+    Failure mode            Control                                         Where
+    infinite loop           identical-call counter, nudge at 2, stop at 3   agent/loop.py
+    goal drift              task re-anchored every 4 steps; plan steps      memory/working.py,
+                            limited to validated tools                      agent/planner.py
+    hallucinated task/tool  unknown_tool observation; plan validation       tools/executor.py
+    hallucinated result     grounding guard on the final answer             agent/guards.py
+    failed tool call        typed error observation, bounded retries,       tools/executor.py
+                            stop after 3 consecutive failures
+    runaway cost            iteration, token and wall-clock limits          agent/loop.py
+
+Verification on real data
+-------------------------
+python scripts/verify.py t04    ->  verification/t04_reasoning_and_planning.json
+  a. The 17 real reader-confirmed nodules of the 10 studies, each phrased as a question with its
+     measured size and type. Truth is the category computed by code. Accuracy, mean calls, mean
+     tokens and mean latency per strategy, and for the tool-using arm.
+  b. Three real goals through the planner/executor: comparing two patients, a three-part request
+     for one patient, and a two-patient acquisition summary. Recorded: the plan, its parallel
+     levels, per-step success, plan attempts, re-plans, tokens, time.
+python -m pytest tests -q
+  test_infinite_loop_is_detected, test_hallucinated_tool_is_reported_not_raised,
+  test_plan_validation_rejects_hallucinated_tool_cycle_and_bad_dependency,
+  test_consecutive_tool_failures_stop_the_run, test_answer_check_sends_answer_back_then_flags_it
+
+Known limits
+------------
+Plan arguments are literals: a step cannot yet take another step's output as an argument, so
+plans are shallow. Tree of Thoughts is one level deep.
